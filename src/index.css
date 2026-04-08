@@ -23,3 +23,150 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: #F8FAFC;
 }
+
+/* ─── Unit Card ─── */
+.unit-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  color: #fff;
+  overflow: hidden;
+  min-height: 152px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.unit-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0);
+  background-size: 14px 14px;
+  pointer-events: none;
+}
+.unit-card::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -40%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+.unit-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 16px 40px -10px rgba(0,0,0,0.22);
+}
+.unit-card--available {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+}
+.unit-card--occupied {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+}
+.unit-card--checkin-today {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+}
+.unit-card--checkout-today {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+}
+.unit-card--maintenance {
+  background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%);
+}
+.unit-card--upcoming {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #0e7490 100%);
+}
+
+/* Card enter animation */
+@keyframes card-pop {
+  0% { opacity: 0; transform: scale(0.92) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.unit-card-enter {
+  animation: card-pop 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ─── Calendar Modal ─── */
+@keyframes modal-slide-up {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes backdrop-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.calendar-backdrop {
+  animation: backdrop-fade 0.2s ease-out both;
+}
+.calendar-modal {
+  animation: modal-slide-up 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Calendar booking bar */
+.booking-bar {
+  position: relative;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
+  line-height: 1.6;
+}
+.booking-bar:hover {
+  filter: brightness(1.12);
+  transform: scaleY(1.08);
+}
+.booking-bar--confirmed {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+.booking-bar--fully-paid {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+.booking-bar--checked-in {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+.booking-bar--checked-out {
+  background: linear-gradient(90deg, #94a3b8, #64748b);
+}
+.booking-bar--inquiry {
+  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+}
+.booking-bar--cancelled {
+  background: linear-gradient(90deg, #f87171, #dc2626);
+  opacity: 0.5;
+}
+
+/* Stat mini card */
+.stat-mini {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
+}
+.stat-mini::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent, #3b82f6);
+}
+.stat-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -6px rgba(0,0,0,0.08);
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
