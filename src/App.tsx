@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Availability from './pages/Availability';
+import BookingsPage from './pages/BookingsPage';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
 import type { Booking, UserRole } from './types';
@@ -74,7 +75,16 @@ function App() {
           />
         );
       case 'bookings':
-        return <PlaceholderPage title="Bookings" />;
+        return (
+          <BookingsPage
+            bookings={bookings}
+            units={mockUnits}
+            villas={mockVillas}
+            selectedVilla={selectedVilla}
+            onUpdateBooking={handleUpdateBooking}
+            isReadOnly={userRole === 'OWNER'}
+          />
+        );
       case 'keuangan':
         return <PlaceholderPage title="Keuangan" />;
       case 'villa':
