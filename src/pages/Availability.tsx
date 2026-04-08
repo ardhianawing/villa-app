@@ -16,7 +16,18 @@ interface AvailabilityProps {
 const TODAY = '2026-04-08';
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-const GRID_DAYS = 14;
+const GRID_DAYS_DESKTOP = 14;
+const GRID_DAYS_MOBILE = 7;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1024);
+  React.useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
+}
 
 const sourceOptions: { value: BookingSource; label: string }[] = [
   { value: 'WHATSAPP', label: 'WhatsApp' },
@@ -115,6 +126,10 @@ const Availability: React.FC<AvailabilityProps> = ({
   onAddBooking,
   onUpdateBooking,
 }) => {
+  const isMobile = useIsMobile();
+  const GRID_DAYS = isMobile ? GRID_DAYS_MOBILE : GRID_DAYS_DESKTOP;
+  const CELL_WIDTH = isMobile ? 48 : 72;
+
   const [startDate, setStartDate] = useState(TODAY);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -254,50 +269,51 @@ const Availability: React.FC<AvailabilityProps> = ({
   return (
     <div className="space-y-4">
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Villa selector */}
-        <select
-          value={selectedVilla}
-          onChange={(e) => onSelectVilla(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
-        >
-          {villas.map((v) => (
-            <option key={v.id} value={v.id}>{v.name}</option>
-          ))}
-        </select>
+      <div className="space-y-2 lg:space-y-0 lg:flex lg:flex-wrap lg:items-center lg:gap-3">
+        {/* Row 1: Villa selector + Date nav */}
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedVilla}
+            onChange={(e) => onSelectVilla(e.target.value)}
+            className="flex-1 lg:flex-none px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+          >
+            {villas.map((v) => (
+              <option key={v.id} value={v.id}>{v.name}</option>
+            ))}
+          </select>
 
-        {/* Date range navigator */}
-        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-2 py-2">
+            <button
+              onClick={() => setStartDate(addDays(startDate, -GRID_DAYS))}
+              className="p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <ChevronLeft size={15} />
+            </button>
+            <span className="text-xs lg:text-sm font-medium text-gray-700 whitespace-nowrap px-1">
+              {formatDateShort(startDate)} — {formatDateShort(addDays(startDate, GRID_DAYS - 1))}
+            </span>
+            <button
+              onClick={() => setStartDate(addDays(startDate, GRID_DAYS))}
+              className="p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <ChevronRight size={15} />
+            </button>
+          </div>
+
           <button
-            onClick={() => setStartDate(addDays(startDate, -7))}
-            className="p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+            onClick={() => setStartDate(TODAY)}
+            className="px-3 py-2 text-xs lg:text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer whitespace-nowrap"
           >
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-            {formatDateShort(startDate)} — {formatDateShort(addDays(startDate, GRID_DAYS - 1))}
-          </span>
-          <button
-            onClick={() => setStartDate(addDays(startDate, 7))}
-            className="p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            <ChevronRight size={16} />
+            Hari Ini
           </button>
         </div>
 
-        <button
-          onClick={() => setStartDate(TODAY)}
-          className="px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
-        >
-          Hari Ini
-        </button>
-
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-3 ml-auto">
+        {/* Row 2: Legend — scrollable horizontal on mobile */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-1 lg:pb-0 lg:ml-auto scrollbar-hide">
           {legendItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-1.5">
+            <div key={item.label} className="flex items-center gap-1.5 flex-shrink-0">
               <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: item.color }} />
-              <span className="text-xs text-gray-500">{item.label}</span>
+              <span className="text-xs text-gray-500 whitespace-nowrap">{item.label}</span>
             </div>
           ))}
         </div>
@@ -305,30 +321,35 @@ const Availability: React.FC<AvailabilityProps> = ({
 
       {/* Grid */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="border-collapse" style={{ minWidth: `${64 + GRID_DAYS * 72}px` }}>
+        <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+          <table className="border-collapse" style={{ minWidth: `${140 + GRID_DAYS * CELL_WIDTH}px` }}>
             <thead>
               <tr>
                 {/* Unit header */}
                 <th
-                  className="sticky left-0 z-20 bg-white border-b border-r border-gray-100 text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                  style={{ minWidth: 140 }}
+                  className="sticky left-0 z-20 bg-white border-b border-r border-gray-100 text-left px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                  style={{ minWidth: 120 }}
                 >
                   Unit
                 </th>
                 {dates.map((date) => {
                   const d = new Date(date);
                   const isToday = date === TODAY;
+                  const isSunday = d.getDay() === 0;
+                  const isSaturday = d.getDay() === 6;
+                  const isWeekend = isSunday || isSaturday;
                   return (
                     <th
                       key={date}
-                      className={`border-b border-r border-gray-100 px-2 py-2 text-center ${isToday ? 'bg-blue-50' : 'bg-white'}`}
-                      style={{ minWidth: 72 }}
+                      className={`border-b border-r border-gray-100 px-1 py-2 text-center ${
+                        isToday ? 'bg-blue-50' : isWeekend ? 'bg-gray-50/60' : 'bg-white'
+                      }`}
+                      style={{ minWidth: CELL_WIDTH }}
                     >
-                      <p className={`text-xs font-medium ${isToday ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <p className={`text-[10px] font-medium ${isToday ? 'text-blue-600' : 'text-gray-400'}`}>
                         {DAYS[d.getDay()]}
                       </p>
-                      <p className={`text-sm font-semibold ${isToday ? 'text-blue-700' : 'text-gray-700'}`}>
+                      <p className={`text-xs lg:text-sm font-semibold ${isToday ? 'text-blue-700' : 'text-gray-700'}`}>
                         {d.getDate()}
                       </p>
                     </th>
@@ -341,11 +362,11 @@ const Availability: React.FC<AvailabilityProps> = ({
                 <tr key={unit.id} className="border-b border-gray-50 last:border-b-0">
                   {/* Unit label - sticky */}
                   <td
-                    className="sticky left-0 z-10 bg-white border-r border-gray-100 px-4 py-3"
-                    style={{ minWidth: 140 }}
+                    className="sticky left-0 z-10 bg-white border-r border-gray-100 px-3 py-2.5"
+                    style={{ minWidth: 120 }}
                   >
-                    <p className="text-sm font-medium text-gray-800">{unit.label}</p>
-                    <p className="text-xs text-gray-400">{formatRupiah(unit.pricePerNight)}/mlm</p>
+                    <p className="text-xs lg:text-sm font-medium text-gray-800">{unit.label}</p>
+                    <p className="text-[10px] lg:text-xs text-gray-400">{formatRupiah(unit.pricePerNight)}/mlm</p>
                     {unit.status === 'MAINTENANCE' && (
                       <span className="text-[10px] text-red-500 font-medium">Maintenance</span>
                     )}
@@ -362,8 +383,8 @@ const Availability: React.FC<AvailabilityProps> = ({
                           className={`border-r border-gray-100 p-0.5 ${isToday ? 'bg-blue-50/30' : ''}`}
                           style={{ minWidth: 72 }}
                         >
-                          <div className="h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: '#FEE2E2' }}>
-                            <span className="text-[10px] text-red-400 font-medium">Maint.</span>
+                          <div className="h-9 rounded-md flex items-center justify-center" style={{ backgroundColor: '#FEE2E2' }}>
+                            <span className="text-[9px] text-red-400 font-medium">Maint.</span>
                           </div>
                         </td>
                       );
@@ -387,11 +408,11 @@ const Availability: React.FC<AvailabilityProps> = ({
                           >
                             <button
                               onClick={() => handleBookingCellClick(booking)}
-                              className="w-full h-10 rounded-md px-2 flex items-center cursor-pointer transition-opacity hover:opacity-80 relative group"
+                              className="w-full h-9 rounded-md px-2 flex items-center cursor-pointer transition-opacity hover:opacity-80"
                               style={{ backgroundColor: blockColor }}
                               title={`${booking.guestName} | ${booking.checkIn} - ${booking.checkOut} | ${booking.guestCount} tamu`}
                             >
-                              <span className="text-white text-xs font-medium truncate">
+                              <span className="text-white text-[10px] lg:text-xs font-medium truncate">
                                 {booking.guestName}
                               </span>
                             </button>
@@ -412,10 +433,10 @@ const Availability: React.FC<AvailabilityProps> = ({
                       >
                         <button
                           onClick={() => handleCellClick(unit, date)}
-                          className="w-full h-10 rounded-md flex items-center justify-center cursor-pointer transition-colors hover:bg-green-50 group-hover:border group-hover:border-green-200"
+                          className="w-full h-9 rounded-md flex items-center justify-center cursor-pointer transition-colors hover:bg-green-50"
                           style={{ backgroundColor: '#F0FDF4' }}
                         >
-                          <Plus size={14} className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Plus size={12} className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                       </td>
                     );
@@ -429,8 +450,8 @@ const Availability: React.FC<AvailabilityProps> = ({
 
       {/* Booking Form Modal */}
       {showBookingModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-end">
-          <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end lg:items-center lg:justify-end">
+          <div className="bg-white w-full lg:max-w-md lg:h-full rounded-t-2xl lg:rounded-none overflow-y-auto shadow-2xl max-h-[92vh] lg:max-h-full">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="font-semibold text-gray-800">Tambah Booking</h2>
               <button
@@ -615,8 +636,8 @@ const Availability: React.FC<AvailabilityProps> = ({
 
       {/* Detail Modal */}
       {showDetailModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end lg:items-center lg:justify-center lg:p-4">
+          <div className="bg-white rounded-t-2xl lg:rounded-2xl w-full lg:max-w-lg shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div>

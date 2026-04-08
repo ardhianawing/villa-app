@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import BottomNav from './BottomNav';
 import type { PageName } from './Sidebar';
 import type { User, Villa } from '../types';
 
@@ -32,6 +33,7 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Sidebar — desktop only */}
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed(!collapsed)}
@@ -42,6 +44,7 @@ const Layout: React.FC<LayoutProps> = ({
         onMobileClose={() => setMobileOpen(false)}
       />
 
+      {/* Main area */}
       <div className={`transition-all duration-200 ${mainMargin}`}>
         <Header
           user={user}
@@ -52,8 +55,12 @@ const Layout: React.FC<LayoutProps> = ({
           onLogout={onLogout}
           onMobileMenuOpen={() => setMobileOpen(true)}
         />
-        <main className="p-4 lg:p-6">{children}</main>
+        {/* pb-20 = ruang untuk bottom nav di mobile */}
+        <main className="p-4 pb-24 lg:p-6 lg:pb-6">{children}</main>
       </div>
+
+      {/* Bottom navigation — mobile only */}
+      <BottomNav activePage={activePage} onNavigate={onNavigate} />
     </div>
   );
 };
