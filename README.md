@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# VillaPro — Villa Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplikasi manajemen villa internal untuk **Operator** dan **Owner/Investor**. Dibangun dengan React + TypeScript + Tailwind CSS v4.
 
-Currently, two official plugins are available:
+**Demo:** https://ardhianawing.github.io/villa-app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Login Demo
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Role | Akses |
+|------|-------|
+| **Operator** | Full control — input booking, kelola unit, lihat keuangan & pengaturan |
+| **Owner** | View only — pantau availability, booking, keuangan, laporan |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend:** React 19 + TypeScript + Vite
+- **Styling:** Tailwind CSS v4
+- **Icons:** Lucide React
+- **Deploy:** GitHub Pages (`gh-pages`)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Fitur yang Sudah Ada
+
+- [x] Login role-based (Operator / Owner)
+- [x] Dashboard — stat cards, check-in/out hari ini, upcoming bookings
+- [x] Availability Grid — 14 hari (desktop) / 7 hari (mobile), booking blocks
+- [x] Tambah booking + DP & pelunasan payment flow
+- [x] Role differentiation — Owner view-only, Operator full-control
+- [x] Mobile-first — bottom navigation, bottom sheet modal
+- [x] Multi-villa selector
+
+## Fitur Planned
+
+- [ ] Halaman Bookings — list + filter + search
+- [ ] Halaman Keuangan — rekap pembayaran, DP vs lunas
+- [ ] Rate management — harga per kavling + override tanggal tertentu
+- [ ] Halaman Laporan — occupancy rate, revenue per villa
+- [ ] Villa & Unit management (operator only)
+- [ ] Pengaturan akun
+
+---
+
+## Development
+
+```bash
+npm install
+npm run dev       # local dev server
+npm run build     # production build
+npm run deploy    # build + deploy ke GitHub Pages
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Dokumen
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- [`PLAN.md`](./PLAN.md) — product plan, data model, roadmap
+- [`CHANGELOG.md`](./CHANGELOG.md) — log progress per sesi
