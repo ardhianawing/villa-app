@@ -1,12 +1,14 @@
-import { LayoutDashboard, CalendarDays, BookOpen, DollarSign, Settings } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, DollarSign, Settings, BarChart3 } from 'lucide-react';
 import type { PageName } from './Sidebar';
+import type { UserRole } from '../types';
 
 interface BottomNavProps {
   activePage: PageName;
   onNavigate: (page: PageName) => void;
+  userRole: UserRole;
 }
 
-const navItems = [
+const operatorNavItems = [
   { id: 'dashboard' as PageName,     label: 'Home',        icon: LayoutDashboard },
   { id: 'availability' as PageName,  label: 'Availability', icon: CalendarDays },
   { id: 'bookings' as PageName,      label: 'Booking',     icon: BookOpen },
@@ -14,7 +16,16 @@ const navItems = [
   { id: 'pengaturan' as PageName,    label: 'Lainnya',     icon: Settings },
 ];
 
-export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
+const ownerNavItems = [
+  { id: 'dashboard' as PageName,     label: 'Home',        icon: LayoutDashboard },
+  { id: 'availability' as PageName,  label: 'Availability', icon: CalendarDays },
+  { id: 'bookings' as PageName,      label: 'Booking',     icon: BookOpen },
+  { id: 'keuangan' as PageName,      label: 'Keuangan',    icon: DollarSign },
+  { id: 'laporan' as PageName,       label: 'Laporan',     icon: BarChart3 },
+];
+
+export default function BottomNav({ activePage, onNavigate, userRole }: BottomNavProps) {
+  const navItems = userRole === 'OPERATOR' ? operatorNavItems : ownerNavItems;
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
       <div className="flex items-stretch h-16">

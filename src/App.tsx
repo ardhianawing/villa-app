@@ -70,6 +70,7 @@ function App() {
             onSelectVilla={setSelectedVilla}
             onAddBooking={handleAddBooking}
             onUpdateBooking={handleUpdateBooking}
+            isReadOnly={userRole === 'OWNER'}
           />
         );
       case 'bookings':

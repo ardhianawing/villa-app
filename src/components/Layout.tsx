@@ -16,6 +16,7 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+
 const Layout: React.FC<LayoutProps> = ({
   user,
   activePage,
@@ -60,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({
       </div>
 
       {/* Bottom navigation — mobile only */}
-      <BottomNav activePage={activePage} onNavigate={onNavigate} />
+      <BottomNav activePage={activePage} onNavigate={onNavigate} userRole={user.role} />
     </div>
   );
 };

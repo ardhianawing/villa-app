@@ -28,16 +28,17 @@ interface MenuItem {
   id: PageName;
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
+  ownerVisible: boolean; // apakah menu ini tampil untuk Owner
 }
 
 const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'availability', label: 'Availability', icon: CalendarDays },
-  { id: 'bookings', label: 'Bookings', icon: BookOpen },
-  { id: 'keuangan', label: 'Keuangan', icon: DollarSign },
-  { id: 'villa', label: 'Villa & Unit', icon: Building2 },
-  { id: 'laporan', label: 'Laporan', icon: BarChart3 },
-  { id: 'pengaturan', label: 'Pengaturan', icon: Settings },
+  { id: 'dashboard',    label: 'Dashboard',   icon: LayoutDashboard, ownerVisible: true  },
+  { id: 'availability', label: 'Availability', icon: CalendarDays,    ownerVisible: true  },
+  { id: 'bookings',     label: 'Bookings',    icon: BookOpen,        ownerVisible: true  },
+  { id: 'keuangan',     label: 'Keuangan',    icon: DollarSign,      ownerVisible: true  },
+  { id: 'villa',        label: 'Villa & Unit', icon: Building2,      ownerVisible: false },
+  { id: 'laporan',      label: 'Laporan',     icon: BarChart3,       ownerVisible: true  },
+  { id: 'pengaturan',   label: 'Pengaturan',  icon: Settings,        ownerVisible: false },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -83,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-2">
-          {menuItems.map((item) => {
+          {menuItems.filter((item) => user.role === 'OPERATOR' || item.ownerVisible).map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
             return (

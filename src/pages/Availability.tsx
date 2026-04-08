@@ -11,6 +11,7 @@ interface AvailabilityProps {
   onSelectVilla: (id: string) => void;
   onAddBooking: (booking: Booking) => void;
   onUpdateBooking: (booking: Booking) => void;
+  isReadOnly?: boolean;
 }
 
 const TODAY = '2026-04-08';
@@ -125,6 +126,7 @@ const Availability: React.FC<AvailabilityProps> = ({
   onSelectVilla,
   onAddBooking,
   onUpdateBooking,
+  isReadOnly = false,
 }) => {
   const isMobile = useIsMobile();
   const GRID_DAYS = isMobile ? GRID_DAYS_MOBILE : GRID_DAYS_DESKTOP;
@@ -171,6 +173,7 @@ const Availability: React.FC<AvailabilityProps> = ({
   }
 
   function handleCellClick(unit: Unit, date: string) {
+    if (isReadOnly) return;
     const info = getCellInfo(unit, date);
     if (info.status === 'available') {
       setForm({
@@ -308,8 +311,13 @@ const Availability: React.FC<AvailabilityProps> = ({
           </button>
         </div>
 
-        {/* Row 2: Legend — scrollable horizontal on mobile */}
+        {/* Row 2: Legend + read-only badge */}
         <div className="flex items-center gap-3 overflow-x-auto pb-1 lg:pb-0 lg:ml-auto scrollbar-hide">
+          {isReadOnly && (
+            <span className="flex-shrink-0 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+              View Only
+            </span>
+          )}
           {legendItems.map((item) => (
             <div key={item.label} className="flex items-center gap-1.5 flex-shrink-0">
               <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: item.color }} />
@@ -433,10 +441,11 @@ const Availability: React.FC<AvailabilityProps> = ({
                       >
                         <button
                           onClick={() => handleCellClick(unit, date)}
-                          className="w-full h-9 rounded-md flex items-center justify-center cursor-pointer transition-colors hover:bg-green-50"
+                          disabled={isReadOnly}
+                          className={`w-full h-9 rounded-md flex items-center justify-center transition-colors ${isReadOnly ? 'cursor-default' : 'cursor-pointer hover:bg-green-50'}`}
                           style={{ backgroundColor: '#F0FDF4' }}
                         >
-                          <Plus size={12} className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          {!isReadOnly && <Plus size={12} className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
                         </button>
                       </td>
                     );
