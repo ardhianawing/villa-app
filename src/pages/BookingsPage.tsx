@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import {
   Search, Filter, X, Phone, Users, Calendar,
-  Banknote, ChevronDown, MessageCircle,
-  CheckCircle, XCircle, LogIn, LogOut,
-  Clock, ArrowUpDown,
+  Banknote, MessageCircle,
+  XCircle, LogIn, LogOut,
+  ArrowUpDown,
 } from 'lucide-react';
-import type { Booking, BookingStatus, BookingSource, PaymentMethod, Unit, Villa } from '../types';
+import type { Booking, BookingStatus, PaymentMethod, Unit, Villa } from '../types';
 import StatusBadge from '../components/StatusBadge';
 
 interface BookingsPageProps {
@@ -56,7 +56,7 @@ const methodOptions: { value: PaymentMethod; label: string }[] = [
 ];
 
 export default function BookingsPage({
-  bookings, units, villas, selectedVilla, onUpdateBooking, isReadOnly = false,
+  bookings, units, selectedVilla, onUpdateBooking, isReadOnly = false,
 }: BookingsPageProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
