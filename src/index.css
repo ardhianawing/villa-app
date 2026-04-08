@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -170,3 +170,178 @@ body {
 /* Scrollbar hide utility */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Bookings Page ─── */
+.bookings-page {
+  --bk-warm-50: #fdf8f6;
+  --bk-warm-100: #f2e8e5;
+  --bk-warm-200: #eaddd7;
+  --bk-warm-600: #a68a7b;
+  --bk-warm-800: #6b4c3b;
+  --bk-warm-900: #44312a;
+  --bk-sage: #7c8c6e;
+  --bk-sage-light: #e8ede4;
+  --bk-terracotta: #c4704b;
+  --bk-terracotta-light: #fceee7;
+  --bk-sand: #d4c5b2;
+  font-family: 'DM Sans', 'Inter', sans-serif;
+}
+
+/* Booking card */
+.bk-card {
+  position: relative;
+  display: flex;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #f0ebe6;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.3s cubic-bezier(0.16,1,0.3,1),
+              border-color 0.3s;
+}
+.bk-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -8px rgba(107,76,59,0.12);
+  border-color: #e0d5cc;
+}
+
+/* Date strip on left */
+.bk-date-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 14px 8px;
+  font-family: 'DM Mono', monospace;
+  position: relative;
+}
+.bk-date-strip::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--strip-color, #e0d5cc), transparent);
+}
+
+/* Card stagger animation */
+@keyframes bk-slide-in {
+  0% { opacity: 0; transform: translateX(-12px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.bk-card-enter {
+  animation: bk-slide-in 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Status tab underline */
+.bk-tab {
+  position: relative;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: color 0.2s;
+  white-space: nowrap;
+  background: none;
+  border: none;
+}
+.bk-tab:hover { color: #6b4c3b; }
+.bk-tab--active {
+  color: #44312a;
+  font-weight: 600;
+}
+.bk-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--tab-color, #c4704b);
+}
+
+/* Detail modal */
+@keyframes bk-modal-enter {
+  0% { opacity: 0; transform: translateY(30px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bk-modal {
+  animation: bk-modal-enter 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Payment timeline dot */
+.bk-timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+.bk-timeline-dot::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: calc(100% + 12px);
+  background: #e0d5cc;
+}
+.bk-timeline-item:last-child .bk-timeline-dot::after {
+  display: none;
+}
+
+/* Search input with warm tones */
+.bk-search {
+  background: var(--bk-warm-50);
+  border: 1.5px solid var(--bk-warm-100);
+  border-radius: 12px;
+  padding: 10px 12px 10px 40px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--bk-warm-900);
+  transition: border-color 0.25s, box-shadow 0.25s;
+  width: 100%;
+}
+.bk-search::placeholder { color: var(--bk-warm-600); opacity: 0.6; }
+.bk-search:focus {
+  outline: none;
+  border-color: var(--bk-terracotta);
+  box-shadow: 0 0 0 3px rgba(196,112,75,0.1);
+}
+
+/* Action button */
+.bk-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+  border: none;
+  color: #fff;
+}
+.bk-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(0,0,0,0.15);
+}
+.bk-action:active { transform: translateY(0); }
+.bk-action--checkin { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.bk-action--checkout { background: linear-gradient(135deg, #64748b, #475569); }
+.bk-action--pay { background: linear-gradient(135deg, #10b981, #059669); }
+.bk-action--cancel {
+  background: transparent;
+  border: 1.5px solid #fca5a5;
+  color: #dc2626;
+}
+.bk-action--cancel:hover { background: #fef2f2; }
