@@ -48,11 +48,67 @@
 
 ---
 
+## Sesi 2 — 2026-04-08
+
+### Data Update
+- Mock data diganti ke data riil: **Zhafira Villa Residence**, Jl. Imam Bonjol Atas No.27, Kota Batu
+- 15 unit villa (Villa 1–15), harga Rp 850rb–1.5jt/malam
+- 1 villa (hapus villa kedua yang fiktif), 20+ booking tersebar April–Mei 2026
+
+### Visual Overhaul — "Refined Hospitality" Design
+Seluruh UI di-redesign dari generic blue-gray menjadi warm earth tone aesthetic:
+
+**Typography**
+- DM Sans (body/headings) + DM Mono (tanggal, harga, monospace labels)
+- Menggantikan Inter yang terlalu generik
+
+**Color Palette**
+- Terracotta `#c4704b` — accent utama, today highlight, CTA buttons
+- Sage `#7c8c6e` — available/success state
+- Sand `#d4c5b2` — separator, subtle accents
+- Warm grays `#44312a` → `#fdf8f6` — text & background hierarchy
+- Purple `#7b6b8a` — checkout state
+
+**Dashboard**
+- Stat cards dengan warm accents dan left-border accent
+- Unit cards dengan earthy gradient (sage=tersedia, terracotta=terisi, gold=check-in, purple=checkout, slate=maintenance, teal=upcoming)
+- Dot-pattern overlay + radial glow + hover lift animation
+- Klik unit → monthly calendar modal
+
+**Availability Grid**
+- Monospace date headers, terracotta "Hari Ini" highlight
+- Sage-colored available cells (bukan hijau terang)
+- Warm-styled booking form modal dan detail modal
+- Action buttons dengan gradient (bk-action classes)
+
+**Bookings Page (baru)**
+- Date strip cards — kolom tanggal monospace di kiri setiap booking card
+- Status tab navigation dengan underline style (bukan chip/pill)
+- Search bar dengan warm tones
+- Payment timeline dengan dot-line visualization
+- Detail modal dengan colored accent border per status
+- Filter by status, sortable, searchable
+
+**Calendar Modal**
+- Terracotta accent border header
+- Monospace day numbers, terracotta weekend & today highlight
+- Booking bars berwarna per status
+- Detail panel dengan warm background
+- Source icons (emoji) untuk sumber booking
+
+### CSS Architecture
+- Custom CSS variables (`--bk-warm-*`, `--bk-sage`, `--bk-terracotta`, `--bk-sand`)
+- Component classes: `.bk-card`, `.bk-date-strip`, `.bk-tab`, `.bk-search`, `.bk-action`
+- Animations: `bk-slide-in`, `bk-modal-enter`, `card-pop`
+- Google Fonts: DM Sans + DM Mono
+
+---
+
 ## Backlog
 
 | Fitur | Priority | Notes |
 |-------|----------|-------|
-| Halaman Bookings | High | List + filter status + search tamu |
+| ~~Halaman Bookings~~ | ~~High~~ | ~~Done — Sesi 2~~ |
 | Halaman Keuangan | High | Rekap DP vs lunas, export |
 | Rate management | Medium | Harga default per kavling + override tanggal |
 | Halaman Laporan | Medium | Occupancy rate, revenue chart |
