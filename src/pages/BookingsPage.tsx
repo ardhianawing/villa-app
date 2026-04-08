@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   Search, X, Phone, Users, Calendar,
-  Banknote, MessageCircle, XCircle, LogIn, LogOut,
+  Banknote, XCircle, LogIn, LogOut,
   ArrowUpDown, ArrowRight, CreditCard,
 } from 'lucide-react';
 import type { Booking, BookingStatus, PaymentMethod, Unit, Villa } from '../types';
@@ -16,7 +16,6 @@ interface BookingsPageProps {
   isReadOnly?: boolean;
 }
 
-const TODAY = '2026-04-08';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 const MONTHS_FULL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
