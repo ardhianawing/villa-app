@@ -25,6 +25,7 @@ interface FinanceProps {
     villas: Villa[];
     selectedVilla: string;
     expenses: Expense[];
+    onAddExpense: (expense: Expense) => void;
 }
 
 const Finance: React.FC<FinanceProps> = ({
@@ -33,9 +34,18 @@ const Finance: React.FC<FinanceProps> = ({
     villas,
     selectedVilla,
     expenses,
+    onAddExpense
 }) => {
     const [activeTab, setActiveTab] = useState<'transaksi' | 'pengeluaran' | 'laporan'>('transaksi');
     const [selectedUnitFilter, setSelectedUnitFilter] = useState<string>('all');
+    const [showAddExpense, setShowAddExpense] = useState(false);
+    const [expenseForm, setExpenseForm] = useState({
+        label: '',
+        amount: 0,
+        category: 'Operasional',
+        unitId: '',
+        date: new Date().toISOString().split('T')[0]
+    });
 
     const currentVilla = villas.find(v => v.id === selectedVilla);
     console.log('Finance view for:', currentVilla?.name);
@@ -150,7 +160,10 @@ const Finance: React.FC<FinanceProps> = ({
                         </select>
                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7e7a] pointer-events-none" />
                     </div>
-                    <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#d4c5b2] rounded-xl text-sm font-medium text-[#44312a] hover:bg-[#fdf8f6] transition-colors shadow-sm">
+                    <button 
+                        onClick={() => window.print()}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#d4c5b2] rounded-xl text-sm font-medium text-[#44312a] hover:bg-[#fdf8f6] transition-colors shadow-sm"
+                    >
                         <Download size={16} />
                         Laporan
                     </button>
@@ -166,6 +179,16 @@ const Finance: React.FC<FinanceProps> = ({
                     <button className="flex items-center justify-center gap-2 px-4 py-2 bg-[#c4704b] rounded-xl text-sm font-medium text-white hover:bg-[#a65d3d] transition-colors shadow-sm shadow-terracotta/20">
                         <Plus size={16} />
                         Input Transaksi
+                    </button>
+                    <button 
+                        onClick={() => {
+                            setExpenseForm({ ...expenseForm, unitId: selectedUnitFilter === 'all' ? '' : selectedUnitFilter });
+                            setShowAddExpense(true);
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-rose-500 rounded-xl text-sm font-medium text-white hover:bg-rose-600 transition-colors shadow-sm shadow-rose-500/20"
+                    >
+                        <Plus size={16} />
+                        Input Pengeluaran
                     </button>
                 </div>
             </div>
@@ -687,18 +710,109 @@ const Finance: React.FC<FinanceProps> = ({
                                 </div>
                             </div>
                             <div>
-                                <div className="flex justify-between text-[10px] mb-1">
-                                    <span className="opacity-80">Collection Rate</span>
-                                    <span className="font-mono">94%</span>
-                                </div>
-                                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                    <div className="h-full bg-[#c4704b]" style={{ width: '94%' }}></div>
+                                        <div className="flex justify-between text-[10px] mb-1">
+                                            <span className="opacity-80">Collection Rate</span>
+                                            <span className="font-mono">94%</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                            <div className="h-full bg-[#c4704b]" style={{ width: '94%' }}></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+
+            {/* Add Expense Modal */}
+            {showAddExpense && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-[#44312a]/40 backdrop-blur-sm" onClick={() => setShowAddExpense(false)}></div>
+                    <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-6 bg-rose-500 text-white">
+                            <h3 className="text-xl font-bold">Input Pengeluaran</h3>
+                            <p className="text-xs text-white/60 mt-1">Catat biaya operasional atau pemeliharaan</p>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Keterangan / Nama Item</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Contoh: Token Listrik, Gaji Kebersihan"
+                                    value={expenseForm.label} 
+                                    onChange={e => setExpenseForm({ ...expenseForm, label: e.target.value })}
+                                    className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm focus:ring-2 focus:ring-rose-500 outline-none"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Nominal (Rp)</label>
+                                    <input 
+                                        type="number" 
+                                        value={expenseForm.amount || ''} 
+                                        onChange={e => setExpenseForm({ ...expenseForm, amount: parseFloat(e.target.value) || 0 })}
+                                        className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm outline-none" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Kategori</label>
+                                    <select 
+                                        value={expenseForm.category} 
+                                        onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                                        className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm outline-none"
+                                    >
+                                        <option value="Operasional">Operasional</option>
+                                        <option value="Pemeliharaan">Pemeliharaan</option>
+                                        <option value="Gaji">Gaji / HK</option>
+                                        <option value="Utilitas">Utilitas (PLN/Air)</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Pilih Kavling (Opsional)</label>
+                                <select 
+                                    value={expenseForm.unitId} 
+                                    onChange={e => setExpenseForm({ ...expenseForm, unitId: e.target.value })}
+                                    className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm outline-none"
+                                >
+                                    <option value="">Umum (Seluruh Villa)</option>
+                                    {villaUnits.map(u => (
+                                        <option key={u.id} value={u.id}>Unit {u.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    onClick={() => setShowAddExpense(false)}
+                                    className="flex-1 py-4 bg-[#f3eee8] text-[#8c7e7a] rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-[#e8dfd5]"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        if (!expenseForm.label || expenseForm.amount <= 0) return;
+                                        onAddExpense({
+                                            id: 'exp-' + Math.random().toString(36).substr(2, 9),
+                                            villaId: selectedVilla,
+                                            label: expenseForm.label,
+                                            amount: expenseForm.amount,
+                                            category: expenseForm.category,
+                                            unitId: expenseForm.unitId || undefined,
+                                            date: expenseForm.date
+                                        });
+                                        setShowAddExpense(false);
+                                        setExpenseForm({ label: '', amount: 0, category: 'Operasional', unitId: '', date: new Date().toISOString().split('T')[0] });
+                                    }}
+                                    className="flex-1 py-4 bg-rose-500 text-white rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-rose-600 shadow-lg shadow-rose-500/30 disabled:opacity-50"
+                                >
+                                    Simpan Pengeluaran
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

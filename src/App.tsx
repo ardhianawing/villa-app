@@ -9,7 +9,7 @@ import VillaManagement from './pages/VillaManagement';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
-import type { Booking, UserRole, Villa, Unit, PricingRule, Blackout, DailyPriceOverride } from './types';
+import type { Booking, UserRole, Villa, Unit, PricingRule, Blackout, DailyPriceOverride, Expense } from './types';
 import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses, mockPricingRules, mockBlackouts } from './data/mockData';
 
 
@@ -21,7 +21,7 @@ function App() {
   const [bookings, setBookings] = useState<Booking[]>(mockBookings);
   const [villas, setVillas] = useState<Villa[]>(mockVillas);
   const [units, setUnits] = useState<Unit[]>(mockUnits);
-  const [expenses] = useState(mockExpenses);
+  const [expenses, setExpenses] = useState(mockExpenses);
   const [pricingRules, setPricingRules] = useState<PricingRule[]>(mockPricingRules);
   const [blackouts, setBlackouts] = useState<Blackout[]>(mockBlackouts);
   const [priceOverrides, setPriceOverrides] = useState<DailyPriceOverride[]>([]);
@@ -60,6 +60,10 @@ function App() {
 
   function handleAddPricingRule(rule: PricingRule) {
     setPricingRules((prev) => [...prev, rule]);
+  }
+
+  function handleAddExpense(expense: Expense) {
+    setExpenses((prev) => [...prev, expense]);
   }
 
   function handleDeletePricingRule(id: string) {
@@ -136,6 +140,7 @@ function App() {
             villas={villas}
             selectedVilla={selectedVilla}
             expenses={expenses}
+            onAddExpense={handleAddExpense}
           />
         );
       case 'villa':
