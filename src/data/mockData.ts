@@ -1,4 +1,4 @@
-import type { User, Owner, Villa, Unit, Booking, Expense, PricingRule } from '../types';
+import type { User, Owner, Villa, Unit, Booking, Expense, PricingRule, Blackout } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
@@ -472,4 +472,23 @@ export const mockPricingRules: PricingRule[] = [
     endDate: '2026-04-05',
     active: true
   }
+];
+
+export const mockBlackouts: Blackout[] = [
+  {
+    id: 'bl1',
+    unitId: 'un13',
+    startDate: '2026-04-05',
+    endDate: '2026-04-10',
+    reason: 'Renovasi Kamar Mandi',
+    createdAt: '2026-04-01T10:00:00Z',
+  },
+  {
+    id: 'bl2',
+    unitId: 'un3',
+    startDate: '2026-04-15',
+    endDate: '2026-04-16',
+    reason: 'Fogging & Deep Cleaning',
+    createdAt: '2026-04-01T10:00:00Z',
+  },
 ];

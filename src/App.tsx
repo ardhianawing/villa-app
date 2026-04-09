@@ -9,8 +9,8 @@ import VillaManagement from './pages/VillaManagement';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
-import type { Booking, UserRole, Villa, Unit, PricingRule } from './types';
-import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses, mockPricingRules } from './data/mockData';
+import type { Booking, UserRole, Villa, Unit, PricingRule, Blackout } from './types';
+import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses, mockPricingRules, mockBlackouts } from './data/mockData';
 
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
   const [units, setUnits] = useState<Unit[]>(mockUnits);
   const [expenses] = useState(mockExpenses);
   const [pricingRules, setPricingRules] = useState<PricingRule[]>(mockPricingRules);
+  const [blackouts, setBlackouts] = useState<Blackout[]>(mockBlackouts);
 
   const currentUser = userRole === 'OPERATOR' ? mockUser : mockOwnerUser;
 
@@ -63,6 +64,13 @@ function App() {
   function handleDeletePricingRule(id: string) {
     setPricingRules((prev) => prev.filter((r) => r.id !== id));
   }
+  function handleAddBlackout(blackout: Blackout) {
+    setBlackouts((prev) => [...prev, blackout]);
+  }
+
+  function handleDeleteBlackout(id: string) {
+    setBlackouts((prev) => prev.filter((b) => b.id !== id));
+  }
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
@@ -91,6 +99,9 @@ function App() {
             onAddBooking={handleAddBooking}
             onUpdateBooking={handleUpdateBooking}
             pricingRules={pricingRules}
+            blackouts={blackouts}
+            onAddBlackout={handleAddBlackout}
+            onDeleteBlackout={handleDeleteBlackout}
             isReadOnly={userRole === 'OWNER'}
           />
         );

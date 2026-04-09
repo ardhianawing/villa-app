@@ -101,3 +101,12 @@ export interface PricingRule {
   daysOfWeek?: number[]; // 0 for Sunday, 6 for Saturday. For WEEKEND [5, 6]
   active: boolean;
 }
+
+export interface Blackout {
+  id: string;
+  unitId: string;
+  startDate: string;
+  endDate: string;
+  reason?: string;
+  createdAt: string;
+}

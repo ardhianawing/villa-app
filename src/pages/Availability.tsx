@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, Phone, Users, Calendar, Banknote, XCircle, Plus, LogIn, LogOut } from 'lucide-react';
-import type { Booking, BookingSource, BookingStatus, PaymentMethod, Unit, Villa, PricingRule } from '../types';
+import type { Booking, BookingSource, BookingStatus, PaymentMethod, Unit, Villa, PricingRule, Blackout } from '../types';
 import { calculateStayPrice } from '../utils/pricing';
 import StatusBadge from '../components/StatusBadge';
 
@@ -13,6 +13,9 @@ interface AvailabilityProps {
   onAddBooking: (booking: Booking) => void;
   onUpdateBooking: (booking: Booking) => void;
   pricingRules: PricingRule[];
+  blackouts: Blackout[];
+  onAddBlackout: (blackout: Blackout) => void;
+  onDeleteBlackout: (id: string) => void;
   isReadOnly?: boolean;
 }
 
@@ -59,8 +62,8 @@ function formatDateFull(dateStr: string): string {
 }
 function generateId(): string { return Math.random().toString(36).slice(2, 9); }
 
-type CellStatus = 'available' | 'booked' | 'maintenance';
-interface CellInfo { status: CellStatus; booking?: Booking; isStart?: boolean; spanDays?: number; }
+type CellStatus = 'available' | 'booked' | 'maintenance' | 'blackout';
+interface CellInfo { status: CellStatus; booking?: Booking; blackout?: Blackout; isStart?: boolean; spanDays?: number; }
 
 const legendItems = [
   { color: '#7c8c6e', label: 'Tersedia' },
@@ -68,6 +71,7 @@ const legendItems = [
   { color: '#c4704b', label: 'Check-in' },
   { color: '#94a3b8', label: 'Check-out' },
   { color: '#8a8178', label: 'Maintenance' },
+  { color: '#44312a', label: 'Blackout' },
 ];
 
 interface BookingFormData {
@@ -82,7 +86,7 @@ const defaultForm: BookingFormData = {
 };
 
 const Availability: React.FC<AvailabilityProps> = ({
-  bookings, units, villas, selectedVilla, onSelectVilla, onAddBooking, onUpdateBooking, pricingRules, isReadOnly = false,
+  bookings, units, villas, selectedVilla, onSelectVilla, onAddBooking, onUpdateBooking, pricingRules, blackouts, onAddBlackout, onDeleteBlackout, isReadOnly = false,
 }) => {
   const isMobile = useIsMobile();
   const GRID_DAYS = isMobile ? GRID_DAYS_MOBILE : GRID_DAYS_DESKTOP;
@@ -96,6 +100,8 @@ const Availability: React.FC<AvailabilityProps> = ({
   const [showPelunasan, setShowPelunasan] = useState(false);
   const [pelunasanAmount, setPelunasanAmount] = useState(0);
   const [pelunasanMethod, setPelunasanMethod] = useState<PaymentMethod>('TRANSFER');
+  const [showBlackoutModal, setShowBlackoutModal] = useState(false);
+  const [blackoutForm, setBlackoutForm] = useState({ unitId: '', startDate: TODAY, endDate: addDays(TODAY, 1), reason: '' });
 
   const villaUnits = units.filter((u) => u.villaId === selectedVilla);
   const villaUnitIds = villaUnits.map((u) => u.id);
@@ -106,11 +112,20 @@ const Availability: React.FC<AvailabilityProps> = ({
 
   function getCellInfo(unit: Unit, date: string): CellInfo {
     if (unit.status === 'MAINTENANCE') return { status: 'maintenance' };
+    
+    // Check Blackouts first
+    const blackout = blackouts.find(b => b.unitId === unit.id && b.startDate <= date && b.endDate > date);
+    if (blackout) {
+      const startVisible = blackout.startDate >= startDate ? blackout.startDate : startDate;
+      const endVisible = blackout.endDate < addDays(startDate, GRID_DAYS) ? blackout.endDate : addDays(startDate, GRID_DAYS);
+      return { status: 'blackout', blackout, isStart: blackout.startDate === date || date === startDate, spanDays: dateDiff(startVisible, endVisible) };
+    }
+
     const booking = villaBookings.find((b) => b.unitId === unit.id && b.checkIn <= date && b.checkOut > date && b.status !== 'CANCELLED');
     if (!booking) return { status: 'available' };
     const endDate = booking.checkOut < addDays(startDate, GRID_DAYS) ? booking.checkOut : addDays(startDate, GRID_DAYS);
     const startVisible = booking.checkIn >= startDate ? booking.checkIn : startDate;
-    return { status: 'booked', booking, isStart: booking.checkIn === date, spanDays: dateDiff(startVisible, endDate) };
+    return { status: 'booked', booking, isStart: booking.checkIn === date || date === startDate, spanDays: dateDiff(startVisible, endDate) };
   }
 
   function handleCellClick(unit: Unit, date: string) {
@@ -121,7 +136,26 @@ const Availability: React.FC<AvailabilityProps> = ({
       setShowBookingModal(true);
     } else if (info.status === 'booked' && info.booking) {
       setSelectedBooking(info.booking); setShowDetailModal(true); setShowPelunasan(false);
+    } else if (info.status === 'blackout' && info.blackout) {
+      if (window.confirm(`Hapus blokir tanggal untuk Unit ${unit.label}? (${info.blackout.reason || 'No reason'})`)) {
+        onDeleteBlackout(info.blackout.id);
+      }
     }
+  }
+
+  function handleSaveBlackout() {
+    if (!blackoutForm.unitId || !blackoutForm.startDate || !blackoutForm.endDate) return;
+    const newBlackout: Blackout = {
+      id: 'bl' + generateId(),
+      unitId: blackoutForm.unitId,
+      startDate: blackoutForm.startDate,
+      endDate: blackoutForm.endDate,
+      reason: blackoutForm.reason,
+      createdAt: new Date().toISOString(),
+    };
+    onAddBlackout(newBlackout);
+    setShowBlackoutModal(false);
+    setBlackoutForm({ unitId: '', startDate: TODAY, endDate: addDays(TODAY, 1), reason: '' });
   }
 
   const nights = dateDiff(form.checkIn, form.checkOut);
@@ -188,11 +222,24 @@ const Availability: React.FC<AvailabilityProps> = ({
             </button>
           </div>
 
-          <button onClick={() => setStartDate(TODAY)}
+            <button onClick={() => setStartDate(TODAY)}
             className="px-3 py-2 text-xs lg:text-sm rounded-xl cursor-pointer whitespace-nowrap font-semibold transition-colors"
             style={{ background: 'var(--bk-terracotta-light)', color: 'var(--bk-terracotta)', border: 'none' }}>
             Hari Ini
           </button>
+          
+          {!isReadOnly && (
+            <button 
+              onClick={() => {
+                setBlackoutForm({ ...blackoutForm, startDate: TODAY, endDate: addDays(TODAY, 1), unitId: villaUnits[0]?.id || '' });
+                setShowBlackoutModal(true);
+              }}
+              className="px-3 py-2 text-xs lg:text-sm rounded-xl cursor-pointer whitespace-nowrap font-semibold transition-colors flex items-center gap-1.5"
+              style={{ background: '#44312a', color: '#fff' }}>
+              <XCircle size={14} />
+              Blokir Tanggal
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3 overflow-x-auto pb-1 lg:pb-0 lg:ml-auto scrollbar-hide">
@@ -255,6 +302,24 @@ const Availability: React.FC<AvailabilityProps> = ({
                           </div>
                         </td>
                       );
+                    }
+
+                    if (info.status === 'blackout' && info.blackout) {
+                      if (info.isStart) {
+                        const spanDays = info.spanDays ?? 1;
+                        return (
+                          <td key={date} className="p-0.5" colSpan={spanDays} style={{ borderRight: '1px solid var(--bk-warm-100)', background: bgToday, minWidth: CELL_WIDTH * spanDays }}>
+                            <div 
+                              className="w-full h-9 rounded-md px-2 flex items-center justify-center" 
+                              style={{ background: '#44312a' }}
+                              title={`Blackout: ${info.blackout.reason || 'No reason'}`}
+                            >
+                              <span className="text-white text-[9px] font-bold uppercase tracking-tight">Blackout</span>
+                            </div>
+                          </td>
+                        );
+                      }
+                      return null;
                     }
 
                     if (info.status === 'booked' && info.booking) {
@@ -405,8 +470,19 @@ const Availability: React.FC<AvailabilityProps> = ({
             <div className="px-6 py-5 flex-shrink-0" style={{ borderBottom: `2px solid ${selectedBooking.status === 'CHECKED_IN' ? '#c4704b' : '#3b82f6'}` }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold" style={{ color: 'var(--bk-warm-900)', fontFamily: "'DM Sans', sans-serif" }}>{selectedBooking.guestName}</h2>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h2 className="text-lg font-bold" style={{ color: 'var(--bk-warm-900)', fontFamily: "'DM Sans', sans-serif" }}>{selectedBooking.guestName}</h2>
+                    {(() => {
+                        const stays = bookings.filter(b => b.guestPhone === selectedBooking.guestPhone && b.status === 'CHECKED_OUT').length;
+                        if (stays > 0) return (
+                           <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-bold rounded-full uppercase tracking-tighter ring-1 ring-amber-200">
+                             Repeat Guest ({stays}x)
+                           </span>
+                        );
+                        return null;
+                    })()}
+                  </div>
+                  <div className="flex items-center gap-2">
                     <span className="text-sm" style={{ color: 'var(--bk-warm-600)' }}>{selectedUnit?.label}</span>
                     <StatusBadge status={selectedBooking.status} />
                   </div>
@@ -485,9 +561,99 @@ const Availability: React.FC<AvailabilityProps> = ({
                     <button onClick={() => setShowPelunasan(!showPelunasan)} className="bk-action bk-action--pay flex-1"><Banknote size={15} /> Pelunasan</button>
                   )}
                 </div>
+                
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => {
+                        const msg = `Halo ${selectedBooking.guestName}, kami dari Zhafira Villa ingin mengonfirmasi booking Anda untuk tanggal ${formatDateShort(selectedBooking.checkIn)}.`;
+                        window.open(`https://wa.me/${selectedBooking.guestPhone?.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+                    }}
+                    className="flex-1 py-2.5 bg-[#25D366] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#128C7E] transition-all"
+                  >
+                    <Phone size={14} /> WhatsApp
+                  </button>
+                  <button 
+                    onClick={() => window.print()} 
+                    className="flex-1 py-2.5 bg-white border border-[#d4c5b2] text-[#44312a] rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
+                  >
+                    <Banknote size={14} /> Cetak Invoice
+                  </button>
+                </div>
+
                 <button onClick={() => handleStatusChange('CANCELLED')} className="bk-action bk-action--cancel w-full"><XCircle size={14} /> Batalkan</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* ─── Blackout Modal ─── */}
+      {showBlackoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 shadow-xl" style={{ background: 'rgba(68,49,42,0.45)', backdropFilter: 'blur(8px)' }}>
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-[#d4c5b2]">
+            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '2px solid #44312a' }}>
+              <h2 className="font-bold text-[#44312a]">Blokir Tanggal (Maintenance)</h2>
+              <button onClick={() => setShowBlackoutModal(false)} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer" style={{ background: 'var(--bk-warm-50)' }}>
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--bk-warm-600)' }}>Unit / Kavling</label>
+                <select 
+                  value={blackoutForm.unitId} 
+                  onChange={(e) => setBlackoutForm({ ...blackoutForm, unitId: e.target.value })} 
+                  className={inputCls}
+                  style={{ border: '1.5px solid var(--bk-warm-100)', background: 'var(--bk-warm-50)' }}
+                >
+                  {villaUnits.map((u) => <option key={u.id} value={u.id}>{u.label}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--bk-warm-600)' }}>Mulai</label>
+                  <input 
+                    type="date" 
+                    value={blackoutForm.startDate} 
+                    onChange={(e) => setBlackoutForm({ ...blackoutForm, startDate: e.target.value })} 
+                    className={inputCls} 
+                    style={{ border: '1.5px solid var(--bk-warm-100)', fontFamily: "'DM Mono', monospace" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--bk-warm-600)' }}>Sampai</label>
+                  <input 
+                    type="date" 
+                    value={blackoutForm.endDate} 
+                    onChange={(e) => setBlackoutForm({ ...blackoutForm, endDate: e.target.value })} 
+                    className={inputCls} 
+                    style={{ border: '1.5px solid var(--bk-warm-100)', fontFamily: "'DM Mono', monospace" }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--bk-warm-600)' }}>Alasan / Keterangan</label>
+                <textarea 
+                  rows={3} 
+                  placeholder="Misal: Perbaikan pipa bocor, Deep cleaning..." 
+                  value={blackoutForm.reason} 
+                  onChange={(e) => setBlackoutForm({ ...blackoutForm, reason: e.target.value })} 
+                  className={`${inputCls} resize-none`} 
+                  style={{ border: '1.5px solid var(--bk-warm-100)' }}
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-[#fdf8f6] flex gap-3 border-t border-[#f3eee8]">
+              <button onClick={() => setShowBlackoutModal(false)} className="flex-1 py-3 rounded-xl border border-[#d4c5b2] font-bold text-xs uppercase tracking-widest text-[#8c7e7a] hover:bg-white transition-all">Batal</button>
+              <button 
+                onClick={handleSaveBlackout} 
+                className="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-white shadow-lg active:scale-95 transition-all"
+                style={{ background: '#44312a' }}
+              >
+                Simpan Blokir
+              </button>
+            </div>
           </div>
         </div>
       )}
