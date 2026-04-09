@@ -1,4 +1,4 @@
-import type { PricingRule, Unit } from '../types';
+import type { PricingRule, Unit, DailyPriceOverride } from '../types';
 
 /**
  * Calculates the total price for a stay based on base price and dynamic pricing rules.
@@ -7,7 +7,8 @@ export function calculateStayPrice(
     unit: Unit,
     checkIn: string,
     checkOut: string,
-    rules: PricingRule[]
+    rules: PricingRule[],
+    overrides: DailyPriceOverride[] = []
 ): { total: number; breakdown: { date: string; price: number; ruleLabel?: string }[] } {
     const start = new Date(checkIn);
     const end = new Date(checkOut);
@@ -23,11 +24,17 @@ export function calculateStayPrice(
         let activePrice = unit.pricePerNight;
         let activeRuleLabel: string | undefined = undefined;
 
-        // Sort rules by priority: SPECIFIC_DATE > SEASONAL > WEEKEND
-        const sortedRules = [...rules].filter(r => r.active).sort((a, b) => {
-            const priority = { 'SPECIFIC_DATE': 0, 'SEASONAL': 1, 'WEEKEND': 2 };
-            return priority[a.type] - priority[b.type];
-        });
+        // 1. Check for manual overrides FIRST (Highest Priority)
+        const override = overrides.find(o => o.unitId === unit.id && o.date === dateStr);
+        if (override) {
+            activePrice = override.price;
+            activeRuleLabel = 'Manual Override';
+        } else {
+            // 2. Sort rules by priority: SPECIFIC_DATE > SEASONAL > WEEKEND
+            const sortedRules = [...rules].filter(r => r.active).sort((a, b) => {
+                const priority = { 'SPECIFIC_DATE': 0, 'SEASONAL': 1, 'WEEKEND': 2 };
+                return priority[a.type] - priority[b.type];
+            });
 
         for (const rule of sortedRules) {
             let matches = false;
@@ -52,6 +59,7 @@ export function calculateStayPrice(
                 break; // Use the first matching rule (highest priority)
             }
         }
+    } // End of else block
 
         nights.push({ date: dateStr, price: activePrice, ruleLabel: activeRuleLabel });
         totalPrice += activePrice;

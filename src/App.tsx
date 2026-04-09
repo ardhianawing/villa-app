@@ -9,7 +9,7 @@ import VillaManagement from './pages/VillaManagement';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
-import type { Booking, UserRole, Villa, Unit, PricingRule, Blackout } from './types';
+import type { Booking, UserRole, Villa, Unit, PricingRule, Blackout, DailyPriceOverride } from './types';
 import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses, mockPricingRules, mockBlackouts } from './data/mockData';
 
 
@@ -24,6 +24,7 @@ function App() {
   const [expenses] = useState(mockExpenses);
   const [pricingRules, setPricingRules] = useState<PricingRule[]>(mockPricingRules);
   const [blackouts, setBlackouts] = useState<Blackout[]>(mockBlackouts);
+  const [priceOverrides, setPriceOverrides] = useState<DailyPriceOverride[]>([]);
 
   const currentUser = userRole === 'OPERATOR' ? mockUser : mockOwnerUser;
 
@@ -72,6 +73,14 @@ function App() {
     setBlackouts((prev) => prev.filter((b) => b.id !== id));
   }
 
+  function handleUpdatePriceOverrides(overrides: DailyPriceOverride[]) {
+    // Basic logic: replace for the same date/unit
+    setPriceOverrides((prev) => {
+      const filtered = prev.filter(p => !overrides.some(o => o.unitId === p.unitId && o.date === p.date));
+      return [...filtered, ...overrides];
+    });
+  }
+
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
   }
@@ -102,6 +111,7 @@ function App() {
             blackouts={blackouts}
             onAddBlackout={handleAddBlackout}
             onDeleteBlackout={handleDeleteBlackout}
+            priceOverrides={priceOverrides}
             isReadOnly={userRole === 'OWNER'}
           />
         );
@@ -114,6 +124,7 @@ function App() {
             selectedVilla={selectedVilla}
             onUpdateBooking={handleUpdateBooking}
             pricingRules={pricingRules}
+            priceOverrides={priceOverrides}
             isReadOnly={userRole === 'OWNER'}
           />
         );
@@ -139,6 +150,8 @@ function App() {
             onUpdatePricingRule={handleUpdatePricingRule}
             onAddPricingRule={handleAddPricingRule}
             onDeletePricingRule={handleDeletePricingRule}
+            priceOverrides={priceOverrides}
+            onUpdatePriceOverrides={handleUpdatePriceOverrides}
           />
         );
       case 'laporan':

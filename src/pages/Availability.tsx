@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, Phone, Users, Calendar, Banknote, XCircle, Plus, LogIn, LogOut } from 'lucide-react';
-import type { Booking, BookingSource, BookingStatus, PaymentMethod, Unit, Villa, PricingRule, Blackout } from '../types';
+import type { Booking, BookingSource, BookingStatus, PaymentMethod, Unit, Villa, PricingRule, Blackout, DailyPriceOverride } from '../types';
 import { calculateStayPrice } from '../utils/pricing';
 import StatusBadge from '../components/StatusBadge';
 
@@ -16,6 +16,7 @@ interface AvailabilityProps {
   blackouts: Blackout[];
   onAddBlackout: (blackout: Blackout) => void;
   onDeleteBlackout: (id: string) => void;
+  priceOverrides: DailyPriceOverride[];
   isReadOnly?: boolean;
 }
 
@@ -78,15 +79,18 @@ interface BookingFormData {
   unitId: string; checkIn: string; checkOut: string; guestName: string;
   guestPhone: string; guestCount: number; source: BookingSource;
   notes: string; dpAmount: number; dpMethod: PaymentMethod;
+  customPrice: number; // For manual override
 }
 
 const defaultForm: BookingFormData = {
   unitId: '', checkIn: TODAY, checkOut: addDays(TODAY, 1), guestName: '',
   guestPhone: '', guestCount: 2, source: 'WHATSAPP', notes: '', dpAmount: 0, dpMethod: 'TRANSFER',
+  customPrice: 0,
 };
 
 const Availability: React.FC<AvailabilityProps> = ({
-  bookings, units, villas, selectedVilla, onSelectVilla, onAddBooking, onUpdateBooking, pricingRules, blackouts, onAddBlackout, onDeleteBlackout, isReadOnly = false,
+  bookings, units, villas, selectedVilla, onSelectVilla, onAddBooking, onUpdateBooking, 
+  pricingRules, blackouts, onAddBlackout, onDeleteBlackout, priceOverrides, isReadOnly = false,
 }) => {
   const isMobile = useIsMobile();
   const GRID_DAYS = isMobile ? GRID_DAYS_MOBILE : GRID_DAYS_DESKTOP;
@@ -132,7 +136,14 @@ const Availability: React.FC<AvailabilityProps> = ({
     if (isReadOnly) return;
     const info = getCellInfo(unit, date);
     if (info.status === 'available') {
-      setForm({ ...defaultForm, unitId: unit.id, checkIn: date, checkOut: addDays(date, 1) });
+      const initialPricing = calculateStayPrice(unit, date, addDays(date, 1), pricingRules, priceOverrides);
+      setForm({ 
+        ...defaultForm, 
+        unitId: unit.id, 
+        checkIn: date, 
+        checkOut: addDays(date, 1),
+        customPrice: initialPricing.total / 1 // 1 night
+      });
       setShowBookingModal(true);
     } else if (info.status === 'booked' && info.booking) {
       setSelectedBooking(info.booking); setShowDetailModal(true); setShowPelunasan(false);
@@ -161,15 +172,17 @@ const Availability: React.FC<AvailabilityProps> = ({
   const nights = dateDiff(form.checkIn, form.checkOut);
   const unit = villaUnits.find((u) => u.id === form.unitId);
 
-  const pricing = unit ? calculateStayPrice(unit, form.checkIn, form.checkOut, pricingRules) : { total: 0, breakdown: [] };
-  const totalPrice = pricing.total;
+  const pricing = unit ? calculateStayPrice(unit, form.checkIn, form.checkOut, pricingRules, priceOverrides) : { total: 0, breakdown: [] };
+  const systemTotalPrice = pricing.total;
+  const totalPrice = form.customPrice > 0 ? form.customPrice * Math.max(nights, 0) : systemTotalPrice;
 
   function handleSaveBooking() {
     if (!form.guestName || !form.unitId || nights <= 0) return;
     const newBooking: Booking = {
       id: 'b' + generateId(), unitId: form.unitId, guestName: form.guestName,
       guestPhone: form.guestPhone, guestCount: form.guestCount, source: form.source,
-      checkIn: form.checkIn, checkOut: form.checkOut, nights, pricePerNight: unit?.pricePerNight ?? 0,
+      checkIn: form.checkIn, checkOut: form.checkOut, nights, 
+      pricePerNight: form.customPrice > 0 ? form.customPrice : (unit?.pricePerNight ?? 0),
       totalPrice, status: 'INQUIRY', notes: form.notes,
       payments: form.dpAmount > 0 ? [{ id: 'p' + generateId(), bookingId: '', amount: form.dpAmount, type: 'DP', method: form.dpMethod, paidAt: new Date().toISOString() }] : [],
     };
@@ -395,9 +408,24 @@ const Availability: React.FC<AvailabilityProps> = ({
                   <input type="date" value={form.checkOut} min={addDays(form.checkIn, 1)} onChange={(e) => setForm({ ...form, checkOut: e.target.value })} className={inputCls} style={{ border: '1.5px solid var(--bk-warm-100)', fontFamily: "'DM Mono', monospace" }} />
                 </div>
               </div>
-              <div className="rounded-xl px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bk-terracotta-light)' }}>
-                <span className="text-sm font-medium" style={{ color: 'var(--bk-terracotta)' }}>Jumlah Malam</span>
-                <span className="font-bold" style={{ color: 'var(--bk-warm-900)', fontFamily: "'DM Mono', monospace" }}>{Math.max(nights, 0)} malam</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl px-4 py-3 flex flex-col justify-center" style={{ background: 'var(--bk-terracotta-light)' }}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--bk-terracotta)' }}>Malam</span>
+                  <span className="font-bold text-lg" style={{ color: 'var(--bk-warm-900)', fontFamily: "'DM Mono', monospace" }}>{Math.max(nights, 0)} mlm</span>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--bk-warm-600)', fontFamily: "'DM Mono', monospace" }}>Harga / Malam</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#8c7e7a]">Rp</span>
+                    <input 
+                      type="number" 
+                      value={form.customPrice || ''} 
+                      onChange={(e) => setForm({ ...form, customPrice: parseFloat(e.target.value) || 0 })} 
+                      className={`${inputCls} pl-10`} 
+                      style={{ border: '1.5px solid var(--bk-warm-100)', fontFamily: "'DM Mono', monospace" }} 
+                    />
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--bk-warm-600)', fontFamily: "'DM Mono', monospace" }}>Nama Tamu *</label>

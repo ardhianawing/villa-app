@@ -17,7 +17,7 @@ import {
     PlusCircle,
     Trash
 } from 'lucide-react';
-import type { Villa, Unit, PricingRule, PricingRuleType } from '../types';
+import type { Villa, Unit, PricingRule, PricingRuleType, DailyPriceOverride } from '../types';
 
 interface VillaManagementProps {
     villas: Villa[];
@@ -29,6 +29,8 @@ interface VillaManagementProps {
     onUpdatePricingRule: (updated: PricingRule) => void;
     onAddPricingRule: (rule: PricingRule) => void;
     onDeletePricingRule: (id: string) => void;
+    priceOverrides: DailyPriceOverride[];
+    onUpdatePriceOverrides: (overrides: DailyPriceOverride[]) => void;
 }
 
 const VillaManagement: React.FC<VillaManagementProps> = ({
@@ -40,7 +42,9 @@ const VillaManagement: React.FC<VillaManagementProps> = ({
     pricingRules,
     onUpdatePricingRule,
     onAddPricingRule,
-    onDeletePricingRule
+    onDeletePricingRule,
+    priceOverrides,
+    onUpdatePriceOverrides
 }) => {
     const [activeTab, setActiveTab] = useState<'units' | 'pricing'>('units');
     const currentVilla = villas.find(v => v.id === selectedVilla);
@@ -52,6 +56,36 @@ const VillaManagement: React.FC<VillaManagementProps> = ({
     // Form states
     const [villaForm, setVillaForm] = useState({ name: '', address: '' });
     const [unitForm, setUnitForm] = useState({ label: '', price: 0, status: 'AVAILABLE' as 'AVAILABLE' | 'MAINTENANCE' });
+
+    // Manual Override State
+    const [showOverrideModal, setShowOverrideModal] = useState(false);
+    const [overrideForm, setOverrideForm] = useState({
+        unitId: '',
+        startDate: '',
+        endDate: '',
+        price: 0
+    });
+
+    const handleApplyOverride = () => {
+        if (!overrideForm.unitId || !overrideForm.startDate || !overrideForm.endDate || overrideForm.price <= 0) return;
+        
+        const overrides: DailyPriceOverride[] = [];
+        const start = new Date(overrideForm.startDate);
+        const end = new Date(overrideForm.endDate);
+        
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            overrides.push({
+                id: Math.random().toString(36).slice(2, 9),
+                unitId: overrideForm.unitId,
+                date: d.toISOString().split('T')[0],
+                price: overrideForm.price
+            });
+        }
+        
+        onUpdatePriceOverrides(overrides);
+        setShowOverrideModal(false);
+        setOverrideForm({ unitId: '', startDate: '', endDate: '', price: 0 });
+    };
 
     const startEditVilla = () => {
         if (!currentVilla) return;
@@ -277,10 +311,30 @@ const VillaManagement: React.FC<VillaManagementProps> = ({
 
                     {activeTab === 'pricing' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                            <div className="flex items-center justify-between px-2">
+                             <div className="flex flex-col lg:flex-row gap-4 mb-4">
+                                <div className="flex-1 bg-[#44312a]/5 border border-[#44312a]/10 rounded-2xl p-5 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-[#44312a] text-white flex items-center justify-center font-bold text-xl">
+                                            Rp
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-[#44312a]">Override Harga Manual</h4>
+                                            <p className="text-xs text-[#8c7e7a]">Set harga khusus untuk tanggal tertentu ({priceOverrides.filter(o => villaUnits.some(u => u.id === o.unitId)).length} data aktif)</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setShowOverrideModal(true)}
+                                        className="bg-[#44312a] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-[#2a1f1a] transition-all shadow-md"
+                                    >
+                                        Atur Harga Spesifik
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between px-2 pt-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-[#44312a]">Aturan Harga Dinamis</h3>
-                                    <p className="text-xs text-[#8c7e7a]">Atur penyesuaian harga otomatis untuk weekend atau hari libur</p>
+                                    <h3 className="text-lg font-bold text-[#44312a]">Aturan Harga Otomatis</h3>
+                                    <p className="text-xs text-[#8c7e7a]">Atur penyesuaian harga rutin based on weekend/musim</p>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -510,6 +564,80 @@ const VillaManagement: React.FC<VillaManagementProps> = ({
                             >
                                 Simpan Perubahan
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Manual Override Modal */}
+            {showOverrideModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-[#44312a]/40 backdrop-blur-sm" onClick={() => setShowOverrideModal(false)}></div>
+                    <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-6 bg-[#44312a] text-white">
+                            <h3 className="text-xl font-bold">Atur Harga Spesifik</h3>
+                            <p className="text-xs text-white/60 mt-1">Gunakan ini untuk periode High Season atau event khusus</p>
+                        </div>
+                        <div className="p-6 space-y-5">
+                            <div>
+                                <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Pilih Unit</label>
+                                <select 
+                                    value={overrideForm.unitId} 
+                                    onChange={e => setOverrideForm({ ...overrideForm, unitId: e.target.value })}
+                                    className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm focus:ring-2 focus:ring-[#c4704b] outline-none"
+                                >
+                                    <option value="">-- Pilih Unit --</option>
+                                    {villaUnits.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
+                                </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Mulai</label>
+                                    <input 
+                                        type="date" 
+                                        value={overrideForm.startDate} 
+                                        onChange={e => setOverrideForm({ ...overrideForm, startDate: e.target.value })}
+                                        className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm outline-none" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Selesai</label>
+                                    <input 
+                                        type="date" 
+                                        min={overrideForm.startDate}
+                                        value={overrideForm.endDate} 
+                                        onChange={e => setOverrideForm({ ...overrideForm, endDate: e.target.value })}
+                                        className="w-full mt-1.5 px-4 py-3 bg-[#fdf8f6] border border-[#d4c5b2] rounded-xl text-sm outline-none" 
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-[#8c7e7a] uppercase tracking-widest pl-1">Harga per Malam (Nett)</label>
+                                <div className="relative mt-1.5">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#c4704b]">Rp</span>
+                                    <input 
+                                        type="number" 
+                                        placeholder="0"
+                                        value={overrideForm.price || ''} 
+                                        onChange={e => setOverrideForm({ ...overrideForm, price: parseFloat(e.target.value) || 0 })}
+                                        className="w-full pl-12 pr-4 py-4 bg-[#fdf8f6] border-2 border-[#d4c5b2] rounded-2xl text-lg font-bold text-[#44312a] outline-none focus:border-[#c4704b]" 
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    onClick={() => setShowOverrideModal(false)}
+                                    className="flex-1 py-4 bg-[#f3eee8] text-[#8c7e7a] rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-[#e8dfd5]"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    onClick={handleApplyOverride}
+                                    disabled={!overrideForm.unitId || !overrideForm.startDate || !overrideForm.endDate || overrideForm.price <= 0}
+                                    className="flex-1 py-4 bg-[#c4704b] text-white rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-[#a65d3d] shadow-lg shadow-terracotta/30 disabled:opacity-50"
+                                >
+                                    Terapkan Harga
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

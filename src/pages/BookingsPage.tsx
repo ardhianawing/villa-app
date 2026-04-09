@@ -4,7 +4,7 @@ import {
   Banknote, XCircle, LogIn, LogOut,
   ArrowUpDown, ArrowRight, CreditCard,
 } from 'lucide-react';
-import type { Booking, BookingStatus, PaymentMethod, Unit, Villa, PricingRule } from '../types';
+import type { Booking, BookingStatus, PaymentMethod, Unit, Villa, PricingRule, DailyPriceOverride } from '../types';
 import StatusBadge from '../components/StatusBadge';
 import { calculateStayPrice } from '../utils/pricing';
 
@@ -15,6 +15,7 @@ interface BookingsPageProps {
   selectedVilla: string;
   onUpdateBooking: (booking: Booking) => void;
   pricingRules: PricingRule[];
+  priceOverrides: DailyPriceOverride[];
   isReadOnly?: boolean;
 }
 
@@ -84,7 +85,7 @@ const stripBg: Record<BookingStatus, string> = {
 };
 
 export default function BookingsPage({
-  bookings, units, selectedVilla, onUpdateBooking, pricingRules, isReadOnly = false,
+  bookings, units, selectedVilla, onUpdateBooking, pricingRules, priceOverrides, isReadOnly = false,
 }: BookingsPageProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
@@ -435,7 +436,7 @@ export default function BookingsPage({
                 {(() => {
                   const bUnit = units.find(u => u.id === selectedBooking.unitId);
                   if (!bUnit) return null;
-                  const pricing = calculateStayPrice(bUnit, selectedBooking.checkIn, selectedBooking.checkOut, pricingRules);
+                  const pricing = calculateStayPrice(bUnit, selectedBooking.checkIn, selectedBooking.checkOut, pricingRules, priceOverrides);
                   const breakdownWithLabels = pricing.breakdown.filter(b => b.ruleLabel);
 
                   if (breakdownWithLabels.length === 0) return null;

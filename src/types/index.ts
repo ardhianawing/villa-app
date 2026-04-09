@@ -110,3 +110,10 @@ export interface Blackout {
   reason?: string;
   createdAt: string;
 }
+
+export interface DailyPriceOverride {
+  id: string;
+  unitId: string;
+  date: string; // ISO format
+  price: number;
+}
