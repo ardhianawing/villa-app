@@ -5,6 +5,7 @@ import Availability from './pages/Availability';
 import BookingsPage from './pages/BookingsPage';
 import Finance from './pages/Finance';
 import Reports from './pages/Reports';
+import VillaManagement from './pages/VillaManagement';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
 import type { Booking, UserRole } from './types';
@@ -99,7 +100,13 @@ function App() {
           />
         );
       case 'villa':
-        return <PlaceholderPage title="Villa & Unit" />;
+        return (
+          <VillaManagement
+            villas={mockVillas}
+            units={mockUnits}
+            selectedVilla={selectedVilla}
+          />
+        );
       case 'laporan':
         return (
           <Reports

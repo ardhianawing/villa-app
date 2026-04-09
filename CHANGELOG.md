@@ -125,6 +125,12 @@ Seluruh UI di-redesign dari generic blue-gray menjadi warm earth tone aesthetic:
 - **Booking Source Breakdown** — Donut chart (CSS-based) untuk melihat kontribusi tiap channel (WA, IG, OTA)
 - **Geographic Insights** — Placeholder untuk Map Guest Origin data
 
+### Halaman Manajemen Villa & Unit
+- **Villa Profile Card** — Informasi dasar (alamat, status) dengan akses cepat CCTV
+- **Villa Editing** — Fitur inline editing untuk informasi nama dan alamat villa
+- **Unit Inventory List** — Grid card untuk semua unit dengan info harga dan status
+- **Operational Management** — Modal untuk edit label unit, harga default, dan toggle status (Available vs Maintenance)
+
 ---
 
 ## Backlog
@@ -134,6 +140,6 @@ Seluruh UI di-redesign dari generic blue-gray menjadi warm earth tone aesthetic:
 | ~~Halaman Bookings~~ | ~~High~~ | ~~Done — Sesi 2~~ |
 | ~~Halaman Keuangan~~ | ~~High~~ | ~~Done — Sesi 3~~ |
 | ~~Halaman Laporan~~ | ~~Medium~~ | ~~Done — Sesi 3~~ |
+| ~~Villa & Unit management~~ | ~~Low~~ | ~~Done — Sesi 3~~ |
 | Rate management | Medium | Harga default per kavling + override tanggal |
-| Villa & Unit management | Low | CRUD villa dan kavling |
 | Pengaturan | Low | Profil, notifikasi |
