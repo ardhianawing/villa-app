@@ -1,4 +1,4 @@
-import type { User, Owner, Villa, Unit, Booking } from '../types';
+import type { User, Owner, Villa, Unit, Booking, Expense } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
@@ -34,15 +34,15 @@ export const mockVillas: Villa[] = [
 ];
 
 export const mockUnits: Unit[] = [
-  { id: 'un1',  villaId: 'v1', label: 'Villa 1',  pricePerNight: 850000,  status: 'AVAILABLE' },
-  { id: 'un2',  villaId: 'v1', label: 'Villa 2',  pricePerNight: 850000,  status: 'AVAILABLE' },
-  { id: 'un3',  villaId: 'v1', label: 'Villa 3',  pricePerNight: 900000,  status: 'AVAILABLE' },
-  { id: 'un4',  villaId: 'v1', label: 'Villa 4',  pricePerNight: 900000,  status: 'AVAILABLE' },
-  { id: 'un5',  villaId: 'v1', label: 'Villa 5',  pricePerNight: 950000,  status: 'AVAILABLE' },
-  { id: 'un6',  villaId: 'v1', label: 'Villa 6',  pricePerNight: 950000,  status: 'AVAILABLE' },
-  { id: 'un7',  villaId: 'v1', label: 'Villa 7',  pricePerNight: 1000000, status: 'AVAILABLE' },
-  { id: 'un8',  villaId: 'v1', label: 'Villa 8',  pricePerNight: 1000000, status: 'AVAILABLE' },
-  { id: 'un9',  villaId: 'v1', label: 'Villa 9',  pricePerNight: 1000000, status: 'AVAILABLE' },
+  { id: 'un1', villaId: 'v1', label: 'Villa 1', pricePerNight: 850000, status: 'AVAILABLE' },
+  { id: 'un2', villaId: 'v1', label: 'Villa 2', pricePerNight: 850000, status: 'AVAILABLE' },
+  { id: 'un3', villaId: 'v1', label: 'Villa 3', pricePerNight: 900000, status: 'AVAILABLE' },
+  { id: 'un4', villaId: 'v1', label: 'Villa 4', pricePerNight: 900000, status: 'AVAILABLE' },
+  { id: 'un5', villaId: 'v1', label: 'Villa 5', pricePerNight: 950000, status: 'AVAILABLE' },
+  { id: 'un6', villaId: 'v1', label: 'Villa 6', pricePerNight: 950000, status: 'AVAILABLE' },
+  { id: 'un7', villaId: 'v1', label: 'Villa 7', pricePerNight: 1000000, status: 'AVAILABLE' },
+  { id: 'un8', villaId: 'v1', label: 'Villa 8', pricePerNight: 1000000, status: 'AVAILABLE' },
+  { id: 'un9', villaId: 'v1', label: 'Villa 9', pricePerNight: 1000000, status: 'AVAILABLE' },
   { id: 'un10', villaId: 'v1', label: 'Villa 10', pricePerNight: 1100000, status: 'AVAILABLE' },
   { id: 'un11', villaId: 'v1', label: 'Villa 11', pricePerNight: 1100000, status: 'AVAILABLE' },
   { id: 'un12', villaId: 'v1', label: 'Villa 12', pricePerNight: 1200000, status: 'AVAILABLE' },
@@ -438,4 +438,11 @@ export const mockBookings: Booking[] = [
       { id: 'p17', bookingId: 'b16', amount: -500000, type: 'REFUND', method: 'TRANSFER', paidAt: '2026-04-07T10:00:00Z' },
     ],
   },
+];
+
+export const mockExpenses: Expense[] = [
+  { id: 'e1', villaId: 'v1', label: 'Tagihan Listrik April', amount: 1250000, date: '2026-04-05', category: 'Utility' },
+  { id: 'e2', villaId: 'v1', label: 'Laundry Bedding', amount: 450000, date: '2026-04-06', category: 'Operational' },
+  { id: 'e3', villaId: 'v1', label: 'Service AC Unit 1-4', amount: 800000, date: '2026-04-01', category: 'Maintenance' },
+  { id: 'e4', villaId: 'v1', label: 'Kebutuhan Kamar Mandi', amount: 300000, date: '2026-04-03', category: 'Operational' },
 ];

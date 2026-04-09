@@ -3,10 +3,12 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Availability from './pages/Availability';
 import BookingsPage from './pages/BookingsPage';
+import Finance from './pages/Finance';
+import Reports from './pages/Reports';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
 import type { Booking, UserRole } from './types';
-import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser } from './data/mockData';
+import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses } from './data/mockData';
 
 const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
   <div className="flex flex-col items-center justify-center h-64 text-gray-400">
@@ -24,6 +26,7 @@ function App() {
   const [activePage, setActivePage] = useState<PageName>('dashboard');
   const [selectedVilla, setSelectedVilla] = useState(mockVillas[0].id);
   const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+  const [expenses] = useState(mockExpenses);
 
   const currentUser = userRole === 'OPERATOR' ? mockUser : mockOwnerUser;
 
@@ -86,11 +89,26 @@ function App() {
           />
         );
       case 'keuangan':
-        return <PlaceholderPage title="Keuangan" />;
+        return (
+          <Finance
+            bookings={bookings}
+            units={mockUnits}
+            villas={mockVillas}
+            selectedVilla={selectedVilla}
+            expenses={expenses}
+          />
+        );
       case 'villa':
         return <PlaceholderPage title="Villa & Unit" />;
       case 'laporan':
-        return <PlaceholderPage title="Laporan" />;
+        return (
+          <Reports
+            bookings={bookings}
+            units={mockUnits}
+            villas={mockVillas}
+            selectedVilla={selectedVilla}
+          />
+        );
       case 'pengaturan':
         return <PlaceholderPage title="Pengaturan" />;
       default:

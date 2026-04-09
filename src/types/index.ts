@@ -66,3 +66,13 @@ export interface Booking {
   notes?: string;
   payments: Payment[];
 }
+
+export interface Expense {
+  id: string;
+  villaId: string;
+  label: string;
+  amount: number;
+  date: string;
+  category: string;
+  note?: string;
+}

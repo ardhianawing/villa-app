@@ -104,13 +104,36 @@ Seluruh UI di-redesign dari generic blue-gray menjadi warm earth tone aesthetic:
 
 ---
 
+---
+
+## Sesi 3 — 2026-04-09
+
+### Data & Types
+- Tambah tipe `Expense` untuk pencatatan biaya operasional
+- Tambah `mockExpenses` di `mockData.ts`
+
+### Halaman Keuangan (Finance)
+- **Summary Cards** — Total Pemasukan, Piutang/Pending, Total Pengeluaran, Profit Bersih
+- **Tabs System** — Switch antara Riwayat Transaksi (Pemasukan) dan Biaya Operasional (Pengeluaran)
+- **Visual Analytics** — Monthly Revenue trend chart (mock) dan Financial Health indicators
+- **Transaction List** — Tabel detail dengan filter, search, identitas unit, dan status pelunasan
+- **Quick Actions** — Setoran, Tagihan, dan Export Rekap Bulanan
+
+### Halaman Laporan (Reports)
+- **Analytics Dashboard** — Ringkasan Occupancy Rate, Total Bookings, Avg Stay, dan Repeat Guest Rate
+- **Unit Performance Index** — Visualisasi performa per unit villa dengan bar indicators
+- **Booking Source Breakdown** — Donut chart (CSS-based) untuk melihat kontribusi tiap channel (WA, IG, OTA)
+- **Geographic Insights** — Placeholder untuk Map Guest Origin data
+
+---
+
 ## Backlog
 
 | Fitur | Priority | Notes |
 |-------|----------|-------|
 | ~~Halaman Bookings~~ | ~~High~~ | ~~Done — Sesi 2~~ |
-| Halaman Keuangan | High | Rekap DP vs lunas, export |
+| ~~Halaman Keuangan~~ | ~~High~~ | ~~Done — Sesi 3~~ |
+| ~~Halaman Laporan~~ | ~~Medium~~ | ~~Done — Sesi 3~~ |
 | Rate management | Medium | Harga default per kavling + override tanggal |
-| Halaman Laporan | Medium | Occupancy rate, revenue chart |
 | Villa & Unit management | Low | CRUD villa dan kavling |
 | Pengaturan | Low | Profil, notifikasi |
