@@ -1,4 +1,4 @@
-import type { User, Owner, Villa, Unit, Booking, Expense } from '../types';
+import type { User, Owner, Villa, Unit, Booking, Expense, PricingRule } from '../types';
 
 export const mockUser: User = {
   id: 'u1',
@@ -34,11 +34,11 @@ export const mockVillas: Villa[] = [
 ];
 
 export const mockUnits: Unit[] = [
-  { id: 'un1', villaId: 'v1', label: 'Villa 1', pricePerNight: 850000, status: 'AVAILABLE' },
-  { id: 'un2', villaId: 'v1', label: 'Villa 2', pricePerNight: 850000, status: 'AVAILABLE' },
-  { id: 'un3', villaId: 'v1', label: 'Villa 3', pricePerNight: 900000, status: 'AVAILABLE' },
-  { id: 'un4', villaId: 'v1', label: 'Villa 4', pricePerNight: 900000, status: 'AVAILABLE' },
-  { id: 'un5', villaId: 'v1', label: 'Villa 5', pricePerNight: 950000, status: 'AVAILABLE' },
+  { id: 'un1', villaId: 'v1', label: 'Villa 1', ownerName: 'Bapak Hendra', pricePerNight: 850000, status: 'AVAILABLE' },
+  { id: 'un2', villaId: 'v1', label: 'Villa 2', ownerName: 'Ibu Listia', pricePerNight: 850000, status: 'AVAILABLE' },
+  { id: 'un3', villaId: 'v1', label: 'Villa 3', ownerName: 'Bapak Sugeng', pricePerNight: 900000, status: 'AVAILABLE' },
+  { id: 'un4', villaId: 'v1', label: 'Villa 4', ownerName: 'Ibu Maya', pricePerNight: 900000, status: 'AVAILABLE' },
+  { id: 'un5', villaId: 'v1', label: 'Villa 5', ownerName: 'Bapak Rudi', pricePerNight: 950000, status: 'AVAILABLE' },
   { id: 'un6', villaId: 'v1', label: 'Villa 6', pricePerNight: 950000, status: 'AVAILABLE' },
   { id: 'un7', villaId: 'v1', label: 'Villa 7', pricePerNight: 1000000, status: 'AVAILABLE' },
   { id: 'un8', villaId: 'v1', label: 'Villa 8', pricePerNight: 1000000, status: 'AVAILABLE' },
@@ -441,8 +441,35 @@ export const mockBookings: Booking[] = [
 ];
 
 export const mockExpenses: Expense[] = [
-  { id: 'e1', villaId: 'v1', label: 'Tagihan Listrik April', amount: 1250000, date: '2026-04-05', category: 'Utility' },
-  { id: 'e2', villaId: 'v1', label: 'Laundry Bedding', amount: 450000, date: '2026-04-06', category: 'Operational' },
-  { id: 'e3', villaId: 'v1', label: 'Service AC Unit 1-4', amount: 800000, date: '2026-04-01', category: 'Maintenance' },
-  { id: 'e4', villaId: 'v1', label: 'Kebutuhan Kamar Mandi', amount: 300000, date: '2026-04-03', category: 'Operational' },
+  { id: 'e1', villaId: 'v1', unitId: 'un1', label: 'Tagihan Listrik April - Unit 1', amount: 350000, date: '2026-04-05', category: 'Listrik' },
+  { id: 'e2', villaId: 'v1', unitId: 'un2', label: 'Tagihan Listrik April - Unit 2', amount: 420000, date: '2026-04-05', category: 'Listrik' },
+  { id: 'e3', villaId: 'v1', unitId: 'un1', label: 'Service AC Unit 1', amount: 250000, date: '2026-04-01', category: 'Maintenance' },
+  { id: 'e4', villaId: 'v1', label: 'Gaji Satpam Kompleks', amount: 2500000, date: '2026-04-01', category: 'Security' }, // Shared
+  { id: 'e5', villaId: 'v1', label: 'Langganan WiFi Bulanan', amount: 450000, date: '2026-04-02', category: 'WiFi' }, // Shared
+  { id: 'e6', villaId: 'v1', unitId: 'un1', label: 'Maintenance Kolam Unit 1', amount: 600000, date: '2026-04-04', category: 'Maintenance' },
+  { id: 'e7', villaId: 'v1', unitId: 'un2', label: 'Maintenance Kolam Unit 2', amount: 600000, date: '2026-04-04', category: 'Maintenance' },
+];
+
+export const mockPricingRules: PricingRule[] = [
+  {
+    id: 'pr1',
+    villaId: 'v1',
+    type: 'WEEKEND',
+    label: 'Weekend Surcharge',
+    adjustmentType: 'PERCENTAGE',
+    adjustmentValue: 15, // 15% increase
+    daysOfWeek: [5, 6], // Fri, Sat night
+    active: true
+  },
+  {
+    id: 'pr2',
+    villaId: 'v1',
+    type: 'SEASONAL',
+    label: 'Libur Idul Fitri',
+    adjustmentType: 'FIXED',
+    adjustmentValue: 250000, // +250k
+    startDate: '2026-03-30',
+    endDate: '2026-04-05',
+    active: true
+  }
 ];

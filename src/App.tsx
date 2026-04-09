@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Availability from './pages/Availability';
@@ -6,20 +6,12 @@ import BookingsPage from './pages/BookingsPage';
 import Finance from './pages/Finance';
 import Reports from './pages/Reports';
 import VillaManagement from './pages/VillaManagement';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import type { PageName } from './components/Sidebar';
-import type { Booking, UserRole } from './types';
-import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses } from './data/mockData';
+import type { Booking, UserRole, Villa, Unit, PricingRule } from './types';
+import { mockBookings, mockUnits, mockVillas, mockUser, mockOwnerUser, mockExpenses, mockPricingRules } from './data/mockData';
 
-const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
-  <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-      <span className="text-3xl">🚧</span>
-    </div>
-    <h3 className="text-lg font-medium text-gray-600 mb-1">{title}</h3>
-    <p className="text-sm">Halaman ini sedang dalam pengembangan</p>
-  </div>
-);
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -27,7 +19,10 @@ function App() {
   const [activePage, setActivePage] = useState<PageName>('dashboard');
   const [selectedVilla, setSelectedVilla] = useState(mockVillas[0].id);
   const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+  const [villas, setVillas] = useState<Villa[]>(mockVillas);
+  const [units, setUnits] = useState<Unit[]>(mockUnits);
   const [expenses] = useState(mockExpenses);
+  const [pricingRules, setPricingRules] = useState<PricingRule[]>(mockPricingRules);
 
   const currentUser = userRole === 'OPERATOR' ? mockUser : mockOwnerUser;
 
@@ -49,6 +44,26 @@ function App() {
     setBookings((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
   }
 
+  function handleUpdateVilla(updated: Villa) {
+    setVillas((prev) => prev.map((v) => (v.id === updated.id ? updated : v)));
+  }
+
+  function handleUpdateUnit(updated: Unit) {
+    setUnits((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+  }
+
+  function handleUpdatePricingRule(updated: PricingRule) {
+    setPricingRules((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+  }
+
+  function handleAddPricingRule(rule: PricingRule) {
+    setPricingRules((prev) => [...prev, rule]);
+  }
+
+  function handleDeletePricingRule(id: string) {
+    setPricingRules((prev) => prev.filter((r) => r.id !== id));
+  }
+
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
   }
@@ -59,8 +74,8 @@ function App() {
         return (
           <Dashboard
             bookings={bookings}
-            units={mockUnits}
-            villas={mockVillas}
+            units={units}
+            villas={villas}
             selectedVilla={selectedVilla}
             onNavigate={(page) => setActivePage(page)}
           />
@@ -69,12 +84,13 @@ function App() {
         return (
           <Availability
             bookings={bookings}
-            units={mockUnits}
-            villas={mockVillas}
+            units={units}
+            villas={villas}
             selectedVilla={selectedVilla}
             onSelectVilla={setSelectedVilla}
             onAddBooking={handleAddBooking}
             onUpdateBooking={handleUpdateBooking}
+            pricingRules={pricingRules}
             isReadOnly={userRole === 'OWNER'}
           />
         );
@@ -82,10 +98,11 @@ function App() {
         return (
           <BookingsPage
             bookings={bookings}
-            units={mockUnits}
-            villas={mockVillas}
+            units={units}
+            villas={villas}
             selectedVilla={selectedVilla}
             onUpdateBooking={handleUpdateBooking}
+            pricingRules={pricingRules}
             isReadOnly={userRole === 'OWNER'}
           />
         );
@@ -93,8 +110,8 @@ function App() {
         return (
           <Finance
             bookings={bookings}
-            units={mockUnits}
-            villas={mockVillas}
+            units={units}
+            villas={villas}
             selectedVilla={selectedVilla}
             expenses={expenses}
           />
@@ -102,22 +119,28 @@ function App() {
       case 'villa':
         return (
           <VillaManagement
-            villas={mockVillas}
-            units={mockUnits}
+            villas={villas}
+            units={units}
             selectedVilla={selectedVilla}
+            onUpdateVilla={handleUpdateVilla}
+            onUpdateUnit={handleUpdateUnit}
+            pricingRules={pricingRules}
+            onUpdatePricingRule={handleUpdatePricingRule}
+            onAddPricingRule={handleAddPricingRule}
+            onDeletePricingRule={handleDeletePricingRule}
           />
         );
       case 'laporan':
         return (
           <Reports
             bookings={bookings}
-            units={mockUnits}
-            villas={mockVillas}
+            units={units}
+            villas={villas}
             selectedVilla={selectedVilla}
           />
         );
       case 'pengaturan':
-        return <PlaceholderPage title="Pengaturan" />;
+        return <Settings user={currentUser} />;
       default:
         return null;
     }
@@ -128,7 +151,7 @@ function App() {
       user={currentUser}
       activePage={activePage}
       onNavigate={setActivePage}
-      villas={mockVillas}
+      villas={villas}
       selectedVilla={selectedVilla}
       onSelectVilla={setSelectedVilla}
       onLogout={handleLogout}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, Phone, Users, Calendar, Banknote, XCircle, Plus, LogIn, LogOut } from 'lucide-react';
-import type { Booking, BookingSource, BookingStatus, PaymentMethod, Unit, Villa } from '../types';
+import type { Booking, BookingSource, BookingStatus, PaymentMethod, Unit, Villa, PricingRule } from '../types';
+import { calculateStayPrice } from '../utils/pricing';
 import StatusBadge from '../components/StatusBadge';
 
 interface AvailabilityProps {
@@ -11,6 +12,7 @@ interface AvailabilityProps {
   onSelectVilla: (id: string) => void;
   onAddBooking: (booking: Booking) => void;
   onUpdateBooking: (booking: Booking) => void;
+  pricingRules: PricingRule[];
   isReadOnly?: boolean;
 }
 
@@ -80,7 +82,7 @@ const defaultForm: BookingFormData = {
 };
 
 const Availability: React.FC<AvailabilityProps> = ({
-  bookings, units, villas, selectedVilla, onSelectVilla, onAddBooking, onUpdateBooking, isReadOnly = false,
+  bookings, units, villas, selectedVilla, onSelectVilla, onAddBooking, onUpdateBooking, pricingRules, isReadOnly = false,
 }) => {
   const isMobile = useIsMobile();
   const GRID_DAYS = isMobile ? GRID_DAYS_MOBILE : GRID_DAYS_DESKTOP;
@@ -124,7 +126,9 @@ const Availability: React.FC<AvailabilityProps> = ({
 
   const nights = dateDiff(form.checkIn, form.checkOut);
   const unit = villaUnits.find((u) => u.id === form.unitId);
-  const totalPrice = (unit?.pricePerNight ?? 0) * Math.max(nights, 0);
+
+  const pricing = unit ? calculateStayPrice(unit, form.checkIn, form.checkOut, pricingRules) : { total: 0, breakdown: [] };
+  const totalPrice = pricing.total;
 
   function handleSaveBooking() {
     if (!form.guestName || !form.unitId || nights <= 0) return;
@@ -354,9 +358,19 @@ const Availability: React.FC<AvailabilityProps> = ({
               </div>
               <div className="rounded-xl p-4 space-y-1.5" style={{ background: 'var(--bk-warm-50)', border: '1px solid var(--bk-warm-100)' }}>
                 <div className="flex justify-between text-sm" style={{ color: 'var(--bk-warm-600)' }}>
-                  <span>{formatRupiah(unit?.pricePerNight ?? 0)} x {Math.max(nights, 0)} malam</span>
+                  <span>Estimasi ({Math.max(nights, 0)} malam)</span>
                   <span style={{ fontFamily: "'DM Mono', monospace" }}>{formatRupiah(totalPrice)}</span>
                 </div>
+                {pricing.breakdown.some(b => b.ruleLabel) && (
+                  <div className="pt-2 mt-1 space-y-1">
+                    {pricing.breakdown.filter(b => b.ruleLabel).map((b, idx) => (
+                      <div key={idx} className="flex justify-between text-[10px] italic" style={{ color: 'var(--bk-terracotta)' }}>
+                        <span>{formatDateShort(b.date)}: {b.ruleLabel}</span>
+                        <span>{formatRupiah(b.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex justify-between font-bold pt-1.5" style={{ borderTop: '1px dashed var(--bk-warm-200)', color: 'var(--bk-warm-900)' }}>
                   <span>Total</span>
                   <span style={{ fontFamily: "'DM Mono', monospace" }}>{formatRupiah(totalPrice)}</span>

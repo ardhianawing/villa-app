@@ -4,8 +4,9 @@ import {
   Banknote, XCircle, LogIn, LogOut,
   ArrowUpDown, ArrowRight, CreditCard,
 } from 'lucide-react';
-import type { Booking, BookingStatus, PaymentMethod, Unit, Villa } from '../types';
+import type { Booking, BookingStatus, PaymentMethod, Unit, Villa, PricingRule } from '../types';
 import StatusBadge from '../components/StatusBadge';
+import { calculateStayPrice } from '../utils/pricing';
 
 interface BookingsPageProps {
   bookings: Booking[];
@@ -13,6 +14,7 @@ interface BookingsPageProps {
   villas: Villa[];
   selectedVilla: string;
   onUpdateBooking: (booking: Booking) => void;
+  pricingRules: PricingRule[];
   isReadOnly?: boolean;
 }
 
@@ -82,7 +84,7 @@ const stripBg: Record<BookingStatus, string> = {
 };
 
 export default function BookingsPage({
-  bookings, units, selectedVilla, onUpdateBooking, isReadOnly = false,
+  bookings, units, selectedVilla, onUpdateBooking, pricingRules, isReadOnly = false,
 }: BookingsPageProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
@@ -239,7 +241,7 @@ export default function BookingsPage({
               <div
                 key={booking.id}
                 onClick={() => openDetail(booking)}
-                className="bk-card bk-card-enter"
+                className="bk-card flex bk-card-enter"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
                 {/* Date strip */}
@@ -428,6 +430,28 @@ export default function BookingsPage({
                 ) : (
                   <p className="text-xs italic mb-3" style={{ color: 'var(--bk-warm-600)' }}>Belum ada pembayaran</p>
                 )}
+
+                {/* Price Breakdown */}
+                {(() => {
+                  const bUnit = units.find(u => u.id === selectedBooking.unitId);
+                  if (!bUnit) return null;
+                  const pricing = calculateStayPrice(bUnit, selectedBooking.checkIn, selectedBooking.checkOut, pricingRules);
+                  const breakdownWithLabels = pricing.breakdown.filter(b => b.ruleLabel);
+
+                  if (breakdownWithLabels.length === 0) return null;
+
+                  return (
+                    <div className="mb-3 space-y-1.5 animate-in fade-in slide-in-from-top-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--bk-warm-600)' }}>Rincian Penyesuaian Harga</p>
+                      {breakdownWithLabels.map((b, idx) => (
+                        <div key={idx} className="flex justify-between text-[11px] italic" style={{ color: 'var(--bk-terracotta)' }}>
+                          <span>{b.date}: {b.ruleLabel}</span>
+                          <span>{formatRupiah(b.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 {/* Summary */}
                 <div className="pt-3 space-y-1.5" style={{ borderTop: '1px dashed var(--bk-warm-200)' }}>

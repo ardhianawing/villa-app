@@ -9,7 +9,9 @@ import {
     Map,
     Download,
     Share2,
-    CalendarDays
+    CalendarDays,
+    ChevronDown,
+    Home
 } from 'lucide-react';
 import type { Booking, Villa, Unit } from '../types';
 
@@ -27,16 +29,24 @@ const Reports: React.FC<ReportsProps> = ({
     selectedVilla,
 }) => {
     const [timeRange, setTimeRange] = useState<'7d' | '30d' | '3m' | '1y'>('30d');
+    const [selectedUnit, setSelectedUnit] = useState<string>('all');
 
-    // Filter for specific villa
-    const villaBookings = bookings.filter(b => units.find(u => u.id === b.unitId)?.villaId === selectedVilla);
+    // Filter Logic
+    const villaUnits = units.filter(u => u.villaId === selectedVilla);
+    const filteredBookings = bookings.filter(b => {
+        const u = units.find(unit => unit.id === b.unitId);
+        if (!u || u.villaId !== selectedVilla) return false;
+        if (selectedUnit !== 'all' && b.unitId !== selectedUnit) return false;
+        return true;
+    });
+
     const currentVilla = villas.find(v => v.id === selectedVilla);
 
     // Stats Calculations
     const occupancyRate = 78; // Mocked for now
     const avgNights = 2.4;
     const repeatGuestRate = 18;
-    const totalBookings = villaBookings.length;
+    const totalBookings = filteredBookings.length;
 
     // Revenue Source Data (Mock)
     const sourceData = [
@@ -53,9 +63,28 @@ const Reports: React.FC<ReportsProps> = ({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-[#44312a] font-display">Laporan & Analitik</h1>
-                    <p className="text-[#8c7e7a] text-sm">Wawasan performa untuk {currentVilla?.name || 'Villa'}</p>
+                    <p className="text-[#8c7e7a] text-sm">
+                        {selectedUnit === 'all'
+                            ? `Wawasan performa untuk ${currentVilla?.name || 'Villa'}`
+                            : `Performa Unit: Kavling ${villaUnits.find(u => u.id === selectedUnit)?.label}`}
+                    </p>
                 </div>
-                <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-[#d4c5b2] shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Unit Selector */}
+                    <div className="relative">
+                        <Home size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8c7e7a]" />
+                        <select
+                            value={selectedUnit}
+                            onChange={(e) => setSelectedUnit(e.target.value)}
+                            className="pl-9 pr-8 py-2 bg-white border border-[#d4c5b2] rounded-xl text-sm font-medium text-[#44312a] shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#c4704b]/20"
+                        >
+                            <option value="all">Semua Unit</option>
+                            {villaUnits.map(unit => (
+                                <option key={unit.id} value={unit.id}>Kavling {unit.label}</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7e7a] pointer-events-none" />
+                    </div>
                     {(['7d', '30d', '3m', '1y'] as const).map((range) => (
                         <button
                             key={range}
@@ -73,7 +102,7 @@ const Reports: React.FC<ReportsProps> = ({
 
             {/* Main Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bk-card p-5 group hover:border-[#c4704b]/30 transition-all">
+                <div className="bk-card flex flex-col justify-between p-5 group hover:border-[#c4704b]/30 transition-all min-h-[160px]">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-[#7c8c6e]/10 rounded-lg text-[#7c8c6e]">
                             <CalendarDays size={18} />
@@ -91,7 +120,7 @@ const Reports: React.FC<ReportsProps> = ({
                     </div>
                 </div>
 
-                <div className="bk-card p-5 group hover:border-[#c4704b]/30 transition-all">
+                <div className="bk-card flex flex-col justify-between p-5 group hover:border-[#c4704b]/30 transition-all min-h-[160px]">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-[#c4704b]/10 rounded-lg text-[#c4704b]">
                             <TrendingUp size={18} />
@@ -107,7 +136,7 @@ const Reports: React.FC<ReportsProps> = ({
                     <p className="text-[10px] text-[#8c7e7a] mt-4 italic">Pesanan terkonfirmasi bulan ini</p>
                 </div>
 
-                <div className="bk-card p-5 group hover:border-[#c4704b]/30 transition-all">
+                <div className="bk-card flex flex-col justify-between p-5 group hover:border-[#c4704b]/30 transition-all min-h-[160px]">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
                             <Calendar size={18} />
@@ -121,7 +150,7 @@ const Reports: React.FC<ReportsProps> = ({
                     <p className="text-[10px] text-[#8c7e7a] mt-4 italic">Rata-rata durasi menginap</p>
                 </div>
 
-                <div className="bk-card p-5 group hover:border-[#c4704b]/30 transition-all">
+                <div className="bk-card flex flex-col justify-between p-5 group hover:border-[#c4704b]/30 transition-all min-h-[160px]">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-purple-50 rounded-lg text-purple-500">
                             <Users size={18} />

@@ -131,6 +131,10 @@ Seluruh UI di-redesign dari generic blue-gray menjadi warm earth tone aesthetic:
 - **Unit Inventory List** — Grid card untuk semua unit dengan info harga dan status
 - **Operational Management** — Modal untuk edit label unit, harga default, dan toggle status (Available vs Maintenance)
 
+### Deployment
+- **GitHub Pages Update** — Berhasil deploy versi terbaru ke https://ardhianawing.github.io/villa-app/
+- **Build Optimization** — Perbaikan `node_modules` (rolldown issue) dan update `.gitignore` untuk `.vite` folder
+
 ---
 
 ## Backlog

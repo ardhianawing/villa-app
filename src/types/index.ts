@@ -37,6 +37,7 @@ export interface Unit {
   id: string;
   villaId: string;
   label: string;
+  ownerName?: string; // The specific owner of this kavling
   pricePerNight: number;
   status: UnitStatus;
 }
@@ -70,9 +71,33 @@ export interface Booking {
 export interface Expense {
   id: string;
   villaId: string;
+  unitId?: string; // Optional: associated with a specific unit/kavling
   label: string;
   amount: number;
   date: string;
   category: string;
   note?: string;
+}
+
+export interface VillaSettings {
+  checkInTime: string;
+  checkOutTime: string;
+  whatsappNotifications: boolean;
+  emailReports: boolean;
+  currency: string;
+}
+
+export type PricingRuleType = 'WEEKEND' | 'SEASONAL' | 'SPECIFIC_DATE';
+
+export interface PricingRule {
+  id: string;
+  villaId: string;
+  type: PricingRuleType;
+  label: string;
+  adjustmentType: 'FIXED' | 'PERCENTAGE';
+  adjustmentValue: number; // Positive for increase, negative for discount
+  startDate?: string; // For Seasonal/Specific
+  endDate?: string;   // For Seasonal
+  daysOfWeek?: number[]; // 0 for Sunday, 6 for Saturday. For WEEKEND [5, 6]
+  active: boolean;
 }
